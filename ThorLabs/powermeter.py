@@ -1,31 +1,61 @@
-import pyvisa as visa
-import usbtmc
+import pyvisa
 from ThorlabsPM100 import ThorlabsPM100
-import time
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import pause
 
-# VISA 리소스 매니저 초기화
-rm = visa.ResourceManager()
-print(rm.list_resources())
-# # 장치 연결
-# # 여기서 'TCPIP0::192.168.1.100::inst0::INSTR'은 연결된 장치의 VISA 주소입니다.
-# # 실제 IP 주소를 입력해야 합니다.
-# power_meter = rm.open_resource('TCPIP0::192.168.1.100::inst0::INSTR')
-#
-# # 장치 초기화
-# power_meter.write('*RST')  # 장치 초기화 (옵션# )
-#
-# # 측정 모드 설정 (예: 파워 측정)
-# power_meter.write('MEASU:FUNC:RESOLU HIGH')  # 해상도 설정 (옵션)
-# power_meter.write('MEASU:CHAN1:WAV:SOUR1:POW')  # 파워 측정 채널 선택 (옵션)
-#
-# # 측정 시작 (1초 대기 후 측정)
-# time.sleep(1)
-#
-# # 측정값 읽기
-# power_value = power_meter.query('MEASU:POW:DC?')  # DC 파워 값 요청
-#
-# # 출력
-# print(f"측정된 파워: {power_value} W")
-#
-# # 연결 종료
-# power_meter.close()
+low_bound = 0.000001
+choose_device = False
+data_num = -100
+
+font = {'family': 'serif',
+        'color':  'darkred',
+        'weight': 'normal',
+        'size': 256,
+        }
+fig1 = plt.figure(1)
+fig2 = plt.figure(2)
+rm = pyvisa.ResourceManager()
+print(rm)
+
+device = ''
+
+if choose_device:
+    device_idx = input(f"choose index: {rm.list_resources()}")
+    device = rm.list_resources()[int(device_idx)-1]
+else:
+    device = 'USB0::0x1313::0x8078::P0042685::INSTR'
+
+device_address = device
+
+global inst
+
+try:
+    inst = rm.open_resource(device_address, timeout=5000)
+    print("장치 연결 성공:", device_address)
+
+except Exception as e:
+    print("장치 연결 실패:", e)
+
+power_meter = ThorlabsPM100(inst=inst)
+
+data = np.array([power_meter.read])
+visibility = np.array([0])
+while True:
+    power = power_meter.read
+    data = np.append(data, np.array([power]))
+    if data[-1] <= low_bound:
+        data = data[data_num:-1]
+        break
+    Imax = float(data[data_num: -1].max()) * 1000
+    Imin = float(data[data_num: -1].min()) * 1000
+    visibility = np.append(visibility, [(Imax-Imin)/(Imax+Imin)])
+    print(visibility[-1])
+    plt.clf()
+    plt.text(y=0, x=0, s=("%f3" % float(visibility[-1])), fontdict=font)
+    plt.axis('off')
+    pause(0.0001)
+
+#plt.plot(data)
+#plt.plot(visibility)
+
