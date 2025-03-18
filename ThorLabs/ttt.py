@@ -31,7 +31,7 @@ while True:
     if data[-1] <= 0.00010:
         data = data[0:-1]
         df = pd.DataFrame(data[range:-1])
-        df.to_csv('output.csv', index=False)
+        df.to_csv('visibility_90.csv', index=False)
         break
     Imax = float(data[range: -1].max()) * 1000
     Imin = float(data[range: -1].min()) * 1000
