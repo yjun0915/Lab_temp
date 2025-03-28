@@ -9,8 +9,8 @@ props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 count_delay = 0.1
 
 
-def gaussian(x, A, mu, sigma):
-    return A * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+def gaussian(x, a, mu, sigma):
+    return a * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
 
 
 # 파일 경로
@@ -25,14 +25,14 @@ with open(file_path, "r") as file:
     info = file.readlines()
 
 # Counter data 추출
-counter_match = re.search(r"Counter data:\s*array\((\[\[.*?\]\])\)", content, re.DOTALL)
+counter_match = re.search(r"Counter data:\s*array\((\[\[.*?]])\)", content, re.DOTALL)
 if counter_match:
     counter_data = np.array(eval(counter_match.group(1)))
 else:
     raise ValueError("Counter data not found in file.")
 
 # Correlation data 추출
-corr_match = re.search(r"Correlation data:\s*array\((\[.*?\])\)", content, re.DOTALL)
+corr_match = re.search(r"Correlation data:\s*array\((\[.*?])\)", content, re.DOTALL)
 if corr_match:
     correlation_data = np.array(eval(corr_match.group(1)))
 else:
@@ -45,7 +45,7 @@ xdata = np.arange(len(correlation_data))  # NumPy 배열로 변환
 p0 = [max(correlation_data), np.argmax(correlation_data), 10]  # A는 최대값, mu는 최댓값 위치
 
 # 곡선 피팅 수행
-coeff, var_matrix = curve_fit(gaussian, xdata, correlation_data, p0=p0)
+coeff, var_matrix = curve_fit(f=gaussian, xdata=xdata, ydata=correlation_data, p0=p0)
 
 # Counter Data Plot
 ax1 = fig.add_subplot(2, 5, (1, 4))
@@ -63,7 +63,6 @@ ax2 = fig.add_subplot(2, 5, (6, 9))
 
 ax2.plot(xdata, correlation_data, marker='o', linestyle='-', color='r', label="Data")
 
-# 가우시안 피팅된 곡선 추가
 gauss_xdata = np.array([idx/resolution for idx in range(len(correlation_data)*resolution)])
 fitted_y = gaussian(gauss_xdata, *coeff)
 ax2.plot(gauss_xdata, fitted_y, linestyle="--", color="blue", label="Gaussian Fit")
@@ -91,7 +90,6 @@ plt.axis('off')
 plt.show()
 fig.savefig(fname='result fig.png')
 
-# 피팅된 파라미터 출력
 print("Fitted coefficients (A, mu, sigma):", coeff)
 
 print((2*counter_data[2][-1]/(counter_data[0][-1] + counter_data[1][-1]))*100)
