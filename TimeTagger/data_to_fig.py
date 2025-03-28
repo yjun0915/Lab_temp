@@ -14,7 +14,7 @@ def gaussian(x, A, mu, sigma):
 
 
 # 파일 경로
-file_path = "CoincidenceExampleData.txt"
+file_path = "CoincidenceExampleData_28.txt"
 fig = plt.figure(num=1, figsize=(16, 9))
 
 # 데이터 읽기
@@ -83,7 +83,7 @@ ax3.text(x=0.05, y=1.001, s=info_str, transform=ax3.transAxes, fontsize=10, hori
 plt.axis('off')
 
 ax4 = fig.add_subplot(2, 5, 10)
-coeff_info = f'$\mu$ = {coeff[0]} \n $\sigma$ = {coeff[2]}'
+coeff_info = f'%s = %s \n%s = %s'%(r'$\mu$', '{:.3f}'.format(coeff[0]), r'$\sigma$', '{:.3f}'.format(coeff[2]))
 ax4.text(x=0.05, y=1.001, s=coeff_info, transform=ax4.transAxes, fontsize=10, horizontalalignment='left',
          verticalalignment='top', bbox=props)
 plt.axis('off')
