@@ -6,7 +6,8 @@ from scipy.optimize import curve_fit
 Channel_name = ['Channel A', 'Channel B', 'Coincidence']
 resolution = 20
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-count_delay = 0.1
+bin_width = 0.1
+n = 2
 
 
 def gaussian(x, a, mu, sigma):
@@ -14,7 +15,7 @@ def gaussian(x, a, mu, sigma):
 
 
 # 파일 경로
-file_path = "CoincidenceExampleData_28.txt"
+file_path = "CoincidenceExampleData_ERROR.txt"
 fig = plt.figure(num=1, figsize=(16, 9))
 
 # 데이터 읽기
@@ -30,7 +31,7 @@ if counter_match:
     counter_data = np.array(eval(counter_match.group(1)))
 else:
     raise ValueError("Counter data not found in file.")
-
+print(np.shape(counter_data)[1])
 # Correlation data 추출
 corr_match = re.search(r"Correlation data:\s*array\((\[.*?])\)", content, re.DOTALL)
 if corr_match:
@@ -39,7 +40,7 @@ else:
     raise ValueError("Correlation data not found in file.")
 
 # X 데이터 생성
-xdata = np.arange(len(correlation_data))  # NumPy 배열로 변환
+xdata = (np.arange(len(correlation_data)) - int(len(correlation_data)/2))/10 # NumPy 배열로 변환
 
 # 초기 추정값 (A, mu, sigma)
 p0 = [max(correlation_data), np.argmax(correlation_data), 10]  # A는 최대값, mu는 최댓값 위치
@@ -50,23 +51,24 @@ coeff, var_matrix = curve_fit(f=gaussian, xdata=xdata, ydata=correlation_data, p
 # Counter Data Plot
 ax1 = fig.add_subplot(2, 5, (1, 4))
 for i, row in enumerate(counter_data):
-    ax1.plot(row, marker='o', linestyle='-', label=Channel_name[i])
-plt.xticks(ticks=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], labels=(-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, "0.0"))
+    ax1.plot((-1*np.arange(len(row)))/(bin_width*np.shape(counter_data)[1]), row, 'o-')
+#plt.xticks(ticks=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], labels=(-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, "0.0"))
 ax1.set_xlabel('Time (s)')
 ax1.set_ylabel('Count')
 ax1.set_title('Counter Data')
-ax1.legend()
+ax1.legend((Channel_name[0], Channel_name[1], Channel_name[2]), loc=7)
 ax1.grid(True)
+fig.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.3, hspace=0.3)
 
 # Correlation Data Plot
 ax2 = fig.add_subplot(2, 5, (6, 9))
 
 ax2.plot(xdata, correlation_data, marker='o', linestyle='-', color='r', label="Data")
 
-gauss_xdata = np.array([idx/resolution for idx in range(len(correlation_data)*resolution)])
-fitted_y = gaussian(gauss_xdata, *coeff)
-ax2.plot(gauss_xdata, fitted_y, linestyle="--", color="blue", label="Gaussian Fit")
-plt.xticks(ticks=[5, 15, 25, 35, 45], labels=(-2, -1, "0.0", "+1.0", "+2.0"))
+#gauss_xdata = np.array([idx/resolution for idx in range(len(correlation_data)*resolution)])
+fitted_y = gaussian(xdata, *coeff)
+ax2.plot(xdata, fitted_y, linestyle="--", color="blue", label="Gaussian Fit")
+#plt.xticks(ticks=[5, 15, 25, 35, 45], labels=(-2, -1, "0.0", "+1.0", "+2.0"))
 ax2.set_xlabel('Time (ns)')
 ax2.set_ylabel('Correlation')
 ax2.set_title('Correlation Data with Gaussian Fit')
