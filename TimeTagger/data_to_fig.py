@@ -8,6 +8,12 @@ resolution = 20
 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 bin_width = 0.1
 n = 2
+_n = 20
+font = {'family': 'serif',
+        'color':  'k',
+        'weight': 'normal',
+        'size': 16,
+        }
 
 
 def gaussian(x, a, mu, sigma):
@@ -17,6 +23,7 @@ def gaussian(x, a, mu, sigma):
 # 파일 경로
 file_path = "CoincidenceExampleData_ERROR.txt"
 fig = plt.figure(num=1, figsize=(16, 9))
+fig1 = plt.figure(num=2, figsize=(14, 7))
 
 # 데이터 읽기
 with open(file_path, "r") as file:
@@ -31,7 +38,7 @@ if counter_match:
     counter_data = np.array(eval(counter_match.group(1)))
 else:
     raise ValueError("Counter data not found in file.")
-print(np.shape(counter_data)[1])
+
 # Correlation data 추출
 corr_match = re.search(r"Correlation data:\s*array\((\[.*?])\)", content, re.DOTALL)
 if corr_match:
@@ -51,8 +58,7 @@ coeff, var_matrix = curve_fit(f=gaussian, xdata=xdata, ydata=correlation_data, p
 # Counter Data Plot
 ax1 = fig.add_subplot(2, 5, (1, 4))
 for i, row in enumerate(counter_data):
-    ax1.plot((-1*np.arange(len(row)))/(bin_width*np.shape(counter_data)[1]), row, 'o-')
-#plt.xticks(ticks=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], labels=(-0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, "0.0"))
+    ax1.plot((np.arange(len(row))-len(row))/(bin_width*np.shape(counter_data)[1]), row, 'o-')
 ax1.set_xlabel('Time (s)')
 ax1.set_ylabel('Count')
 ax1.set_title('Counter Data')
@@ -65,10 +71,8 @@ ax2 = fig.add_subplot(2, 5, (6, 9))
 
 ax2.plot(xdata, correlation_data, marker='o', linestyle='-', color='r', label="Data")
 
-#gauss_xdata = np.array([idx/resolution for idx in range(len(correlation_data)*resolution)])
 fitted_y = gaussian(xdata, *coeff)
 ax2.plot(xdata, fitted_y, linestyle="--", color="blue", label="Gaussian Fit")
-#plt.xticks(ticks=[5, 15, 25, 35, 45], labels=(-2, -1, "0.0", "+1.0", "+2.0"))
 ax2.set_xlabel('Time (ns)')
 ax2.set_ylabel('Correlation')
 ax2.set_title('Correlation Data with Gaussian Fit')
@@ -81,17 +85,33 @@ for idx in range(1, 10):
     info_str = info_str + '\n' + info[idx]
 ax3.text(x=0.05, y=1.001, s=info_str, transform=ax3.transAxes, fontsize=10, horizontalalignment='left',
          verticalalignment='top', bbox=props)
-plt.axis('off')
+ax3.axis('off')
 
 ax4 = fig.add_subplot(2, 5, 10)
 coeff_info = f'%s = %s \n%s = %s'%(r'$\mu$', '{:.3f}'.format(coeff[0]), r'$\sigma$', '{:.3f}'.format(coeff[2]))
 ax4.text(x=0.05, y=1.001, s=coeff_info, transform=ax4.transAxes, fontsize=10, horizontalalignment='left',
          verticalalignment='top', bbox=props)
-plt.axis('off')
+ax4.axis('off')
+
+
+_ax1 = fig1.add_subplot(111)
+for i, row in enumerate(counter_data):
+    _ax1.plot((np.arange(len(row))-len(row))/(bin_width*np.shape(counter_data)[1]), row, 'o-', )
+_ax1.set_xlabel('Time (s)')
+_ax1.set_xlim(xmax=0)
+_ax1.set_ylabel('Count')
+_ax1.set_title('Counter Data')
+_ax1.legend((Channel_name[0], Channel_name[1], Channel_name[2]), loc=7)
+for i, row in enumerate(counter_data):
+    ave = np.average(row[-_n:-1])
+    _ax1.hlines(y=ave, xmin=-len(row[-_n:-1])/(bin_width*np.shape(counter_data)[1]), xmax=1, colors='k')
+    _ax1.text(x=0.1, y=float(ave-100), s="← "+"{:.3f}".format(ave), fontdict=font)
+_ax1.grid(True)
+fig1.subplots_adjust(left=0.1, bottom=0.1, right=0.8, top=0.9, wspace=0.3, hspace=0.3)
 
 plt.show()
 fig.savefig(fname='result fig.png')
 
 print("Fitted coefficients (A, mu, sigma):", coeff)
 
-print((2*counter_data[2][-1]/(counter_data[0][-1] + counter_data[1][-1]))*100)
+print("Coincidence Efficiency:", (2*np.average(counter_data[2][-_n:-1]))/(np.average(counter_data[0][-_n:-1]) + np.average(counter_data[1][-_n:-1]))*100)
