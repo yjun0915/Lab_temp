@@ -4,6 +4,7 @@ from screeninfo import get_monitors
 import pump
 
 monitor = get_monitors()[0]
+print(monitor)
 
 settings = {
     "resolution": [monitor.width, monitor.height],
