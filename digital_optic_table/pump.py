@@ -1,9 +1,5 @@
 import math
 
-from PIL.ImageChops import offset
-from scipy.ndimage import rotate
-
-
 class Pump:
     def __init__(self, image, offset, x, y, width, height, rotation, magnitude):
         self.image = image
@@ -16,9 +12,10 @@ class Pump:
         self.magnitude = magnitude
 
         self.center = [int(self.x + self.width/2), int(self.y + self.height/2)]
-        print(self.center)
+        print(f"Pump located at {self.center}")
 
     def draw(self):
+        self.image[self.center[0]][self.center[1]] = 1
         for dx in range(self.width):
             x1, y1 = self.rotate(angle=self.rotation, center=self.center, x=self.x+dx, y=self.y)
             x2, y2 = self.rotate(angle=self.rotation, center=self.center, x=self.x+dx, y=self.y+self.height)
@@ -39,7 +36,7 @@ class Pump:
             self.image[x2][y2] = 1
 
         for p in range(int(0.025*self.magnitude)):
-            p -= int(p/2)
+            p -= int(0.0125*self.magnitude)
             x, y = self.rotate(angle=self.rotation, center=self.center, x=self.x+self.width+p, y=self.y+int(self.height/2))
             x = min(x, self.offset[2])
             y = min(y, self.offset[2])
