@@ -31,12 +31,13 @@ for idx in range(table_xy[1], table_xy[3]):
     canvas[table_xy[0]][idx] = 1
     canvas[table_xy[2]][idx] = 1
 
+print(table_xy)
 for px in range(1, int(settings["size"][0]/0.025)):
     px = px*(settings["size"][0]/(int(settings["size"][0]/0.025)))
     for py in range(1, int(settings["size"][1]/0.025)):
         py = py*(settings["size"][1]/(int(settings["size"][1]/0.025)))
         cv2.circle(img=canvas, center=(table_xy[1] + int(py*scale), table_xy[0] + int(px*scale)), radius=1, color=(1, 1, 1), thickness=1)
-laser = pump.Pump(image=canvas, x=0.15, y=0.15, width=0.2, height=0.07, magnitude=scale)
+laser = pump.Pump(image=canvas, offset=table_xy, x=1.935, y=0.1, width=0.06, height=0.04, rotation=45, magnitude=scale)
 canvas = laser.draw()
 
 cv2.imshow(winname="fig_00", mat=canvas.T)
