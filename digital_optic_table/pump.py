@@ -1,4 +1,7 @@
 import math
+from algebra import rotate
+
+rotate = rotate.rotate
 
 class Pump:
     def __init__(self, image, offset, x, y, width, height, rotation, magnitude):
@@ -17,8 +20,8 @@ class Pump:
     def draw(self):
         self.image[self.center[0]][self.center[1]] = 1
         for dx in range(self.width):
-            x1, y1 = self.rotate(angle=self.rotation, center=self.center, x=self.x+dx, y=self.y)
-            x2, y2 = self.rotate(angle=self.rotation, center=self.center, x=self.x+dx, y=self.y+self.height)
+            x1, y1 = rotate(angle=self.rotation, center=self.center, x=self.x+dx, y=self.y)
+            x2, y2 = rotate(angle=self.rotation, center=self.center, x=self.x+dx, y=self.y+self.height)
             x1 = min(x1, self.offset[2])
             x2 = min(x2, self.offset[2])
             y1 = min(y1, self.offset[2])
@@ -26,8 +29,8 @@ class Pump:
             self.image[x1][y1] = 1
             self.image[x2][y2] = 1
         for dy in range(self.height):
-            x1, y1 = self.rotate(angle=self.rotation, center=self.center, x=self.x, y=self.y+dy)
-            x2, y2 = self.rotate(angle=self.rotation, center=self.center, x=self.x+self.width, y=self.y+dy)
+            x1, y1 = rotate(angle=self.rotation, center=self.center, x=self.x, y=self.y+dy)
+            x2, y2 = rotate(angle=self.rotation, center=self.center, x=self.x+self.width, y=self.y+dy)
             x1 = min(x1, self.offset[2])
             x2 = min(x2, self.offset[2])
             y1 = min(y1, self.offset[2])
@@ -37,13 +40,8 @@ class Pump:
 
         for p in range(int(0.025*self.magnitude)):
             p -= int(0.0125*self.magnitude)
-            x, y = self.rotate(angle=self.rotation, center=self.center, x=self.x+self.width+p, y=self.y+int(self.height/2))
+            x, y = rotate(angle=self.rotation, center=self.center, x=self.x+self.width+p, y=self.y+int(self.height/2))
             x = min(x, self.offset[2])
             y = min(y, self.offset[2])
             self.image[x][y] = 1
         return self.image
-
-    def rotate(self, angle, center, x, y):
-        _x = int(math.cos(math.radians(angle))*(x-center[0]) - math.sin(math.radians(angle))*(y-center[1]))
-        _y = int(math.cos(math.radians(angle))*(y-center[1]) + math.sin(math.radians(angle))*(x-center[0]))
-        return [_x+center[0], _y+center[1]]
