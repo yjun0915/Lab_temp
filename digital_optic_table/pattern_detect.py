@@ -2,8 +2,13 @@ import cv2
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from screeninfo import get_monitors
+
+monitor = get_monitors()[0]
 
 image = cv2.imread('IMG_0109.jpg', cv2.IMREAD_COLOR)
+img_ratio = max(np.shape(image)[1]/monitor.width, np.shape(image)[0]/monitor.height)
+image = cv2.resize(src=image, dsize=(int(np.shape(image)[1]/img_ratio), int(np.shape(image)[0]/img_ratio)))
 
 if image is None:
     raise FileNotFoundError("이미지를 찾을 수 없습니다. 경로를 확인하세요.")
