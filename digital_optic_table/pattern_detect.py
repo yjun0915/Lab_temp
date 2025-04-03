@@ -25,14 +25,12 @@ cv2.HoughLinesP(image, rho, theta, threshold, lines=None, minLineLength=None, ma
 - maxLineGap: 직선으로 간주할 최대 에지 점 간격
 '''
 hough_image = cv2.cvtColor(canny_image, cv2.COLOR_GRAY2BGR)
-# for i in range(np.shape(hough_image)[0]):
-#     for j in range(np.shape(hough_image)[1]):
-#         hough_image[i][j] = np.add(hough_image[i][j], [canny_image_2[i][j], canny_image_2[i][j], 0])
 
 line_filter = 1/20
 
 dot_map = np.zeros(shape=(np.shape(hough_image)[0], np.shape(hough_image)[1]))
 
+print(f"Image size is {np.shape(image)}")
 if lines is not None:
     print(f"Total number of Lines are {np.shape(lines)[0]}. ")
     for i in range(lines.shape[0]):
