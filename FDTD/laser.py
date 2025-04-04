@@ -38,7 +38,7 @@ for t in range(Tmax):
     )
 
     # 소스 적용 (가우시안 펄스)
-    Ez[x_src, y_src] += gaussian_pulse(t)
+    Ez[x_src, y_src] += np.sin(10*t*np.pi)
 
     # 시각화를 위한 데이터 저장
     if t % 5 == 0:
