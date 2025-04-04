@@ -1,3 +1,5 @@
+# for idx in tqdm(range(), ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
+
 import cv2
 import numpy as np
 import math
@@ -47,20 +49,11 @@ if lines is not None:
                 cv2.line(hough_image, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
                 cv2.line(dot_map, pt1, pt2, 1, 2, cv2.LINE_AA)
 
-print(np.average(dot_map))
 radius = 15
 circle = np.zeros(shape=(radius*2, radius*2))
 cv2.circle(img=circle, center=(radius-1, radius-1), radius=radius, color=[1], thickness=1)
-convoluted_map = np.zeros(shape=(np.shape(hough_image)[0]-radius*2, np.shape(hough_image)[1]-radius*2))
 
-for mx in tqdm(range(np.shape(dot_map)[0]-np.shape(circle)[0]), ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
-    for my in range(np.shape(dot_map)[1]-np.shape(circle)[1]):
-        value = 0
-        for cx in range(np.shape(circle)[0]):
-            for cy in range(np.shape(circle)[1]):
-                value += circle[cx][cy] * dot_map[mx+cx][my+cy]/100
-        if value >= 0.3:
-            convoluted_map[mx][my] = value
+convoluted_map = cv2.filter2D(src=dot_map, ddepth=-1, kernel=circle)
 
 dft = cv2.dft(src=np.float32(convoluted_map), flags=cv2.DFT_COMPLEX_OUTPUT)
 dft_shift = np.fft.fftshift(dft)
