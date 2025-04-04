@@ -8,7 +8,7 @@ print(monitor)
 
 settings = {
     "resolution": [monitor.width, monitor.height],
-    "size": [2, 0.8]
+    "size": [1.8, 0.8]
 }
 
 canvas = np.zeros(shape=(settings["resolution"][0], settings["resolution"][1]))
@@ -39,8 +39,10 @@ for px in range(1, int(settings["size"][0]/0.025)):
     for py in range(1, int(settings["size"][1]/0.025)):
         py = py*(settings["size"][1]/(int(settings["size"][1]/0.025)))
         cv2.circle(img=canvas, center=(table_xy[1] + int(py*scale), table_xy[0] + int(px*scale)), radius=1, color=(1, 1, 1), thickness=1)
-laser = pump.Pump(image=canvas, offset=table_xy, x=1.9, y=0.1, width=0.06, height=0.04, rotation=90, magnitude=scale)
+laser = pump.Pump(image=canvas, offset=table_xy, x=0.9, y=0.1, width=0.06, height=0.04, rotation=90, magnitude=scale)
 canvas = laser.draw()
 
 cv2.imshow(winname="fig_00", mat=canvas.T)
+canvas = (canvas*255).astype(np.uint8)
+cv2.imwrite(filename="scheme_00.jpg", img=canvas.T)
 cv2.waitKey()

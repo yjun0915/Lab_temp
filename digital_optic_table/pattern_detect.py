@@ -7,6 +7,11 @@ import matplotlib.pyplot as plt
 from screeninfo import get_monitors
 from tqdm import tqdm
 
+def smooth(y, box_pts):
+    box = np.ones(box_pts)/box_pts
+    y_smooth = np.convolve(y, box, mode='same')
+    return y_smooth
+
 monitor = get_monitors()[0]
 
 image = cv2.imread('IMG_0126.jpg', cv2.IMREAD_COLOR)
@@ -53,20 +58,33 @@ radius = 15
 circle = np.zeros(shape=(radius*2, radius*2))
 cv2.circle(img=circle, center=(radius-1, radius-1), radius=radius, color=[1], thickness=1)
 
-convoluted_map = cv2.filter2D(src=dot_map, ddepth=-1, kernel=circle, delta = -15)/100
+convoluted_map = cv2.filter2D(src=dot_map, ddepth=-1, kernel=circle, delta = -10)/280
+gaussian_map = cv2.GaussianBlur(src=convoluted_map, ksize=(5, 5), sigmaX=0.1)*10
+gaussian_map = gaussian_map.astype(np.int64)*1.0
 
-dft = cv2.dft(src=np.float32(convoluted_map), flags=cv2.DFT_COMPLEX_OUTPUT)
+dft = cv2.dft(src=np.float32(gaussian_map), flags=cv2.DFT_COMPLEX_OUTPUT)
 dft_shift = np.fft.fftshift(dft)
 
 magnitude_spectrum = 0.2*np.log(cv2.magnitude(dft_shift[:,:,0],dft_shift[:,:,1]))
 
-plt.plot(magnitude_spectrum[int(np.shape(magnitude_spectrum)[0]/2)][:])
-plt.show()
+fft_plot = smooth(magnitude_spectrum[0, :], 1)
+plt.plot(fft_plot)
+
+max_point = np.unravel_index(np.argmax(gaussian_map, axis=None), gaussian_map.shape)
+estimated_max_point = np.unravel_index(np.argmax(convoluted_map, axis=None), convoluted_map.shape)
+print(estimated_max_point)
+estimated_max_point = [estimated_max_point[0]-int(np.shape(magnitude_spectrum)[0]/2), estimated_max_point[1]-int(np.shape(magnitude_spectrum)[1]/2)]
+print(estimated_max_point)
+
+cv2.circle(img=gaussian_map, center=max_point, radius=3, color=[255, 0, 255], thickness=2)
+cv2.circle(img=gaussian_map, center=(max_point[0]+estimated_max_point[0], max_point[1]+estimated_max_point[1]), radius=3, color=[255, 255, 0], thickness=1)
+
 
 cv2.imshow(winname="spec", mat=magnitude_spectrum)
 
-cv2.imshow(winname="convoluted", mat=convoluted_map)
+cv2.imshow(winname="convoluted", mat=gaussian_map)
 
-cv2.imshow(winname="fig_0", mat=dot_map)
-cv2.imshow(winname="fig_00", mat=hough_image)
+#cv2.imshow(winname="fig_0", mat=dot_map)
+#cv2.imshow(winname="fig_00", mat=hough_image)
+plt.show()
 cv2.waitKey()
