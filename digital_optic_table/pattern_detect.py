@@ -3,22 +3,24 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 from screeninfo import get_monitors
+from tqdm import tqdm
 
 monitor = get_monitors()[0]
 
-image = cv2.imread('IMG_0109.jpg', cv2.IMREAD_COLOR)
-img_ratio = max(np.shape(image)[1]/monitor.width, np.shape(image)[0]/monitor.height)
-image = cv2.resize(src=image, dsize=(int(np.shape(image)[1]/img_ratio), int(np.shape(image)[0]/img_ratio)))
+image = cv2.imread('IMG_0126.jpg', cv2.IMREAD_COLOR)
 
 if image is None:
     raise FileNotFoundError("이미지를 찾을 수 없습니다. 경로를 확인하세요.")
 
+img_ratio = max(np.shape(image)[1]/monitor.width, np.shape(image)[0]/monitor.height)
+image = cv2.resize(src=image, dsize=(int(np.shape(image)[1]/img_ratio), int(np.shape(image)[0]/img_ratio)))
+
 gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-canny_image = cv2.Canny(image=gray_image, threshold1=120, threshold2=200, apertureSize=3, L2gradient=True, )
-canny_image_2 = cv2.Canny(image=gray_image, threshold1=120, threshold2=200, apertureSize=5, L2gradient=True, )
+canny_image = cv2.Canny(image=gray_image, threshold1=120, threshold2=130, apertureSize=3, L2gradient=True, )
+#canny_image_2 = cv2.Canny(image=gray_image, threshold1=120, threshold2=200, apertureSize=5, L2gradient=True, )
 
-lines = cv2.HoughLinesP(image=canny_image, rho=10, theta=np.pi/180, threshold=160, minLineLength=0, maxLineGap=0)
+lines = cv2.HoughLinesP(image=canny_image, rho=10, theta=np.pi/360, threshold=160, minLineLength=0, maxLineGap=0)
 '''
 cv2.HoughLinesP(image, rho, theta, threshold, lines=None, minLineLength=None, maxLineGap=None) -> lines
 - image: 입력 에지 영상
@@ -31,7 +33,7 @@ cv2.HoughLinesP(image, rho, theta, threshold, lines=None, minLineLength=None, ma
 '''
 hough_image = cv2.cvtColor(canny_image, cv2.COLOR_GRAY2BGR)
 
-line_filter = 1/20
+line_filter = 10
 
 dot_map = np.zeros(shape=(np.shape(hough_image)[0], np.shape(hough_image)[1]))
 
@@ -45,15 +47,33 @@ if lines is not None:
                 cv2.line(hough_image, pt1, pt2, (0, 0, 255), 2, cv2.LINE_AA)
                 cv2.line(dot_map, pt1, pt2, 1, 2, cv2.LINE_AA)
 
-dft = cv2.dft(src=np.float32(dot_map), flags=cv2.DFT_COMPLEX_OUTPUT)
+print(np.average(dot_map))
+radius = 15
+circle = np.zeros(shape=(radius*2, radius*2))
+cv2.circle(img=circle, center=(radius-1, radius-1), radius=radius, color=[1], thickness=1)
+convoluted_map = np.zeros(shape=(np.shape(hough_image)[0]-radius*2, np.shape(hough_image)[1]-radius*2))
+
+for mx in tqdm(range(np.shape(dot_map)[0]-np.shape(circle)[0]), ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
+    for my in range(np.shape(dot_map)[1]-np.shape(circle)[1]):
+        value = 0
+        for cx in range(np.shape(circle)[0]):
+            for cy in range(np.shape(circle)[1]):
+                value += circle[cx][cy] * dot_map[mx+cx][my+cy]/100
+        if value >= 0.3:
+            convoluted_map[mx][my] = value
+
+dft = cv2.dft(src=np.float32(convoluted_map), flags=cv2.DFT_COMPLEX_OUTPUT)
 dft_shift = np.fft.fftshift(dft)
 
-magnitude_spectrum1 = 0.02*np.log(cv2.magnitude(dft_shift[:,:,0],dft_shift[:,:,1]))
+magnitude_spectrum = 0.2*np.log(cv2.magnitude(dft_shift[:,:,0],dft_shift[:,:,1]))
 
-plt.plot(magnitude_spectrum1[int(np.shape(magnitude_spectrum1)[0]/4)][:])
-plt.show()
+#plt.plot(magnitude_spectrum1[int(np.shape(magnitude_spectrum1)[0]/4)][:])
+#plt.show()
 
-cv2.imshow(winname="spec", mat=magnitude_spectrum1)
+cv2.imshow(winname="spec", mat=magnitude_spectrum)
+
+cv2.imshow(winname="convoluted", mat=convoluted_map)
+
 cv2.imshow(winname="fig_0", mat=dot_map)
 cv2.imshow(winname="fig_00", mat=hough_image)
 cv2.waitKey()
