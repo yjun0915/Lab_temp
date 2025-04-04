@@ -53,15 +53,15 @@ radius = 15
 circle = np.zeros(shape=(radius*2, radius*2))
 cv2.circle(img=circle, center=(radius-1, radius-1), radius=radius, color=[1], thickness=1)
 
-convoluted_map = cv2.filter2D(src=dot_map, ddepth=-1, kernel=circle)
+convoluted_map = cv2.filter2D(src=dot_map, ddepth=-1, kernel=circle, delta = -15)/100
 
 dft = cv2.dft(src=np.float32(convoluted_map), flags=cv2.DFT_COMPLEX_OUTPUT)
 dft_shift = np.fft.fftshift(dft)
 
 magnitude_spectrum = 0.2*np.log(cv2.magnitude(dft_shift[:,:,0],dft_shift[:,:,1]))
 
-#plt.plot(magnitude_spectrum1[int(np.shape(magnitude_spectrum1)[0]/4)][:])
-#plt.show()
+plt.plot(magnitude_spectrum[int(np.shape(magnitude_spectrum)[0]/2)][:])
+plt.show()
 
 cv2.imshow(winname="spec", mat=magnitude_spectrum)
 
