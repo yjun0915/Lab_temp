@@ -21,7 +21,7 @@ def gaussian(x, a, mu, sigma):
 
 
 # 파일 경로
-file_path = "CoincidenceExampleData_ERROR.txt"
+file_path = "CoincidenceExampleData_16.txt"
 fig = plt.figure(num=1, figsize=(16, 9))
 fig1 = plt.figure(num=2, figsize=(14, 7))
 
