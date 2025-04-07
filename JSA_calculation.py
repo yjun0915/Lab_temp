@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 temperature = 20
 
-domain = (750, 810)
-step = 200
+domain = (750, 820)
+step = 5000
 figure_ticks = 4
 
 def tick_setter(_ticks, axis_data):
@@ -33,7 +33,7 @@ amplitude = np.exp(-1 * np.pow((X + Y - frequency_pump)/bandwidth_pump, 2))
 delta_k = ((frequency_pump - X - Y)/c) + (2*np.pi/poling_period)
 phase_matching_amplitude = np.sinc(delta_k*L/2)
 
-plt.pcolor(amplitude*phase_matching_amplitude)
+plt.pcolor(phase_matching_amplitude)
 ticks, labels = tick_setter(_ticks=figure_ticks, axis_data=wavelength_signal)
 plt.xticks(ticks=ticks, labels=labels)
 ticks, labels = tick_setter(_ticks=figure_ticks, axis_data=wavelength_idler)
