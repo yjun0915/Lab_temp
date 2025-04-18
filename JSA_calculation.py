@@ -11,9 +11,9 @@ pwd = os.path.realpath(__file__)
 fig = plt.figure(num=1, figsize=(13, 4))
 grids = gridspec.GridSpecFromSubplotSpec(nrows=1, ncols=4, width_ratios=[10, 10, 10, 0.5], subplot_spec=gridspec.GridSpec(nrows=1, ncols=1)[0], wspace=0.05)
 
-temperature = 109.3
+temperature = 109.0
 
-domain = (785, 806.5)
+domain = (785, 835)
 step = 300
 figure_ticks = 4
 
@@ -35,11 +35,11 @@ def dn_z_dt(n, T, wavelength_mat):
         n = n + T*dn
         return n
 
-def n_z(wavelength_mat):
+def n_z(wavelength_mat, _temp):
     _wavelength_mat = wavelength_mat * 1e-3           # micrometer
     squared_wavelength_mat = np.pow(_wavelength_mat, 2)
     n_z_mat = np.pow(4.59423 + (0.06206*np.reciprocal(squared_wavelength_mat - 0.04763)) + (110.80672*np.reciprocal(squared_wavelength_mat - 86.12171)), 1/2)
-    n_z_mat = dn_z_dt(n_z_mat, temperature, _wavelength_mat)
+    n_z_mat = dn_z_dt(n_z_mat, _temp, _wavelength_mat)
     return n_z_mat
 
 c = 299792458 * 1e9         # nanometer per second
@@ -78,9 +78,9 @@ for wavelength_pump in tqdm(wavelength_pump_list, ascii=" ▖▘▝▗▚▞█"
     amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump)/(2*np.pi*c/bandwidth_pump), 2))
 
 
-    wavenumber_signal = np.reciprocal(wavelength_signal*n_z(wavelength_signal)) * (2*np.pi)    # inverse nanometer (wave number)
-    wavenumber_idler = np.reciprocal(wavelength_idler*n_z(wavelength_idler)) * (2*np.pi)      # inverse nanometer (wave number)
-    wavenumber_pump = (2*np.pi)/(wavelength_pump*n_z(wavelength_pump))                         # inverse nanometer (wave number)
+    wavenumber_signal = np.reciprocal(wavelength_signal*n_z(wavelength_signal, temperature)) * (2*np.pi)    # inverse nanometer (wave number)
+    wavenumber_idler = np.reciprocal(wavelength_idler*n_z(wavelength_idler, temperature)) * (2*np.pi)      # inverse nanometer (wave number)
+    wavenumber_pump = (2*np.pi)/(wavelength_pump*n_z(wavelength_pump, temperature))                         # inverse nanometer (wave number)
 
     PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
 
@@ -118,7 +118,6 @@ for wavelength_pump in tqdm(wavelength_pump_list, ascii=" ▖▘▝▗▚▞█"
         _phase_matching_amplitude = phase_matching_amplitude
 
     frames.append([amplitude*phase_matching_amplitude, wavelength_pump])
-    _phase_matching_amplitude += amplitude*phase_matching_amplitude
 
 fig2, ax = plt.subplots()
 im = ax.pcolor(frames[0][0])
@@ -138,39 +137,51 @@ ticks, labels = tick_setter(_ticks=figure_ticks, axis_data=wavelength_idler)
 plt.yticks(ticks=ticks, labels=labels)
 plt.xlabel("Signal wavelength (nm)")
 
-tau_list = np.linspace(-10, 10 ,200)
-t_idx = 0
-Coincidence_probability = tau_list
-for tau in tau_list:
-    tau = tau * 1e-12
-    wavelength_pump = _wavelength_pump
-    frequency_signal = np.reciprocal(wavelength_signal) * (2 * np.pi * c)  # radian per second (angular frequency)
-    frequency_idler = np.reciprocal(wavelength_idler) * (2 * np.pi * c)  # radian per second (angular frequency)
-    frequency_pump = (2 * np.pi * c) / wavelength_pump  # radian per second (angular frequency)
+frames_CP = []
 
-    amplitude_X, amplitude_Y = np.meshgrid(frequency_signal, frequency_idler)  # 2-dimensional, radian per second  (angular frequency space)
+temp_list = np.linspace(temperature, temperature+1, 30)
+global tau_list
+for temp in tqdm(temp_list, ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-50b}'):
+    tau_list = np.linspace(-10, 10 ,200)
+    t_idx = 0
+    Coincidence_probability = tau_list
+    for tau in tau_list:
+        tau = tau * 1e-12
+        wavelength_pump = _wavelength_pump
+        frequency_signal = np.reciprocal(wavelength_signal) * (2 * np.pi * c)  # radian per second (angular frequency)
+        frequency_idler = np.reciprocal(wavelength_idler) * (2 * np.pi * c)  # radian per second (angular frequency)
+        frequency_pump = (2 * np.pi * c) / wavelength_pump  # radian per second (angular frequency)
 
-    amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump) / (2 * np.pi * c / bandwidth_pump), 2))
+        amplitude_X, amplitude_Y = np.meshgrid(frequency_signal, frequency_idler)  # 2-dimensional, radian per second  (angular frequency space)
 
-    wavenumber_signal = np.reciprocal(wavelength_signal * n_z(wavelength_signal)) * (
-                2 * np.pi)  # inverse nanometer (wave number)
-    wavenumber_idler = np.reciprocal(wavelength_idler * n_z(wavelength_idler)) * (
-                2 * np.pi)  # inverse nanometer (wave number)
-    wavenumber_pump = (2 * np.pi) / (wavelength_pump * n_z(wavelength_pump))  # inverse nanometer (wave number)
+        amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump) / (2 * np.pi * c / bandwidth_pump), 2))
 
-    PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
+        wavenumber_signal = np.reciprocal(wavelength_signal * n_z(wavelength_signal, temp)) * (2 * np.pi)  # inverse nanometer (wave number)
+        wavenumber_idler = np.reciprocal(wavelength_idler * n_z(wavelength_idler, temp)) * (2 * np.pi)  # inverse nanometer (wave number)
+        wavenumber_pump = (2 * np.pi) / (wavelength_pump * n_z(wavelength_pump, temp))  # inverse nanometer (wave number)
 
-    phase_mismatch = wavenumber_pump - PMA_X - PMA_Y + (2 * np.pi / poling_period)
-    phase_matching_amplitude = np.sinc(phase_mismatch * L / 2)
+        PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
 
-    f = amplitude*phase_matching_amplitude
-    integrated = f-np.transpose(f)*np.exp(-1j*(amplitude_X-amplitude_Y)*tau)
-    p_tau = (1/4)*(np.sum(np.square(integrated)))
+        phase_mismatch = wavenumber_pump - PMA_X - PMA_Y + (2 * np.pi / poling_period)
+        phase_matching_amplitude = np.sinc(phase_mismatch * L / 2)
 
-    Coincidence_probability[t_idx] = np.real(p_tau)
-    t_idx += 1
+        f = amplitude*phase_matching_amplitude
+        integrated = f-np.transpose(f)*np.exp(-1j*(amplitude_Y-amplitude_X)*tau)
+        p_tau = (1/4)*(np.sum(np.square(integrated)))
+
+        Coincidence_probability[t_idx] = p_tau
+        t_idx += 1
+    frames_CP.append([Coincidence_probability, temp])
+
+new_img = []
+for idx in range(np.shape(temp_list)[0]):
+    new_img.append(frames_CP[idx][0])
 
 plt.figure(3)
-plt.plot(Coincidence_probability)
+plt.pcolor(new_img)
+ticks, labels = tick_setter(_ticks=5, axis_data=tau_list)
+plt.xticks(ticks=ticks, labels=labels)
+plt.xlabel("Delay (ps)")
+plt.colorbar()
 
 plt.show()
