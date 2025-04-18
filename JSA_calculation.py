@@ -11,11 +11,10 @@ pwd = os.path.realpath(__file__)
 fig = plt.figure(num=1, figsize=(13, 4))
 grids = gridspec.GridSpecFromSubplotSpec(nrows=1, ncols=4, width_ratios=[10, 10, 10, 0.5], subplot_spec=gridspec.GridSpec(nrows=1, ncols=1)[0], wspace=0.05)
 
-temperature = 20
-birefringence = 1
+temperature = 109.3
 
-domain = (1950, 1995)
-step = 600
+domain = (785, 806.5)
+step = 300
 figure_ticks = 4
 
 def tick_setter(_ticks, axis_data):
@@ -67,23 +66,21 @@ print("starting value :", [_wavelength_pump, bandwidth_pump, poling_period*1e-3,
 
 frames = []
 
-wavelength_pump_list = np.linspace(_wavelength_pump, _wavelength_pump+0.002, 12)
+wavelength_pump_list = np.linspace(_wavelength_pump, _wavelength_pump+0.001, 12)
 _phase_matching_amplitude = []
 for wavelength_pump in tqdm(wavelength_pump_list, ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
-    frequency_signal = np.reciprocal(wavelength_signal) * (2*np.pi*c/n_z(wavelength_signal))           # radian per second (angular frequency)
-    frequency_idler = np.reciprocal(wavelength_idler) * (2*np.pi*c/n_z(wavelength_idler))             # radian per second (angular frequency)
-    frequency_pump =  (2*np.pi*c/n_z(wavelength_pump))/wavelength_pump                               # radian per second (angular frequency)
-
-    print([np.average(n_z(wavelength_signal)), np.average(n_z(wavelength_pump))])
+    frequency_signal = np.reciprocal(wavelength_signal) * (2*np.pi*c)           # radian per second (angular frequency)
+    frequency_idler = np.reciprocal(wavelength_idler) * (2*np.pi*c)             # radian per second (angular frequency)
+    frequency_pump =  (2*np.pi*c)/wavelength_pump                               # radian per second (angular frequency)
 
     amplitude_X, amplitude_Y = np.meshgrid(frequency_signal, frequency_idler)       # 2-dimensional, radian per second  (angular frequency space)
 
     amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump)/(2*np.pi*c/bandwidth_pump), 2))
 
 
-    wavenumber_signal = np.reciprocal(wavelength_signal) * (2*np.pi)    # inverse nanometer (wave number)
-    wavenumber_idler = np.reciprocal(wavelength_idler) * (2*np.pi)      # inverse nanometer (wave number)
-    wavenumber_pump = (2*np.pi)/wavelength_pump                         # inverse nanometer (wave number)
+    wavenumber_signal = np.reciprocal(wavelength_signal*n_z(wavelength_signal)) * (2*np.pi)    # inverse nanometer (wave number)
+    wavenumber_idler = np.reciprocal(wavelength_idler*n_z(wavelength_idler)) * (2*np.pi)      # inverse nanometer (wave number)
+    wavenumber_pump = (2*np.pi)/(wavelength_pump*n_z(wavelength_pump))                         # inverse nanometer (wave number)
 
     PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
 
@@ -140,5 +137,40 @@ plt.xticks(ticks=ticks, labels=labels)
 ticks, labels = tick_setter(_ticks=figure_ticks, axis_data=wavelength_idler)
 plt.yticks(ticks=ticks, labels=labels)
 plt.xlabel("Signal wavelength (nm)")
+
+tau_list = np.linspace(-10, 10 ,200)
+t_idx = 0
+Coincidence_probability = tau_list
+for tau in tau_list:
+    tau = tau * 1e-12
+    wavelength_pump = _wavelength_pump
+    frequency_signal = np.reciprocal(wavelength_signal) * (2 * np.pi * c)  # radian per second (angular frequency)
+    frequency_idler = np.reciprocal(wavelength_idler) * (2 * np.pi * c)  # radian per second (angular frequency)
+    frequency_pump = (2 * np.pi * c) / wavelength_pump  # radian per second (angular frequency)
+
+    amplitude_X, amplitude_Y = np.meshgrid(frequency_signal, frequency_idler)  # 2-dimensional, radian per second  (angular frequency space)
+
+    amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump) / (2 * np.pi * c / bandwidth_pump), 2))
+
+    wavenumber_signal = np.reciprocal(wavelength_signal * n_z(wavelength_signal)) * (
+                2 * np.pi)  # inverse nanometer (wave number)
+    wavenumber_idler = np.reciprocal(wavelength_idler * n_z(wavelength_idler)) * (
+                2 * np.pi)  # inverse nanometer (wave number)
+    wavenumber_pump = (2 * np.pi) / (wavelength_pump * n_z(wavelength_pump))  # inverse nanometer (wave number)
+
+    PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
+
+    phase_mismatch = wavenumber_pump - PMA_X - PMA_Y + (2 * np.pi / poling_period)
+    phase_matching_amplitude = np.sinc(phase_mismatch * L / 2)
+
+    f = amplitude*phase_matching_amplitude
+    integrated = f-np.transpose(f)*np.exp(-1j*(amplitude_X-amplitude_Y)*tau)
+    p_tau = (1/4)*(np.sum(np.square(integrated)))
+
+    Coincidence_probability[t_idx] = np.real(p_tau)
+    t_idx += 1
+
+plt.figure(3)
+plt.plot(Coincidence_probability)
 
 plt.show()
