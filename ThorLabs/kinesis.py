@@ -1,9 +1,15 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import pause
 from pylablib.devices import Thorlabs
 from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTagger, freeTimeTagger
+from tqdm import tqdm
+from datetime import datetime
 
+start_point = 0.021000
+end_point = 0.024000
+data_num=30
 
 def checkstr(arr, keys):
     val = False
@@ -12,6 +18,19 @@ def checkstr(arr, keys):
             if item == key:
                 val = True
     return val
+
+def move_kinesis(sub_stage, pos, log=[]):
+    sub_stage.move_to(position=pos, channel=1, scale=True)
+    while checkstr(arr=sub_stage.get_status(channel=1), keys=["moving_fw", "moving_bk"]):
+        if log:
+            log.append(sub_stage.get_position(channel=1, scale=True))
+        pause(0.001)
+
+def tick_setter(_ticks, axis_data):
+    length = len(axis_data)
+    arrange = np.arange(length//(2*_ticks), length, length//_ticks)
+    # arrange = np.append(arrange, [int(length/2)])
+    return arrange, axis_data[arrange].astype(np.float16)
 
 # device connecting
 device_list = Thorlabs.list_kinesis_devices()
@@ -24,38 +43,46 @@ coincidences = Coincidences(
 counter = Counter(
     tagger=tagger,
     channels= [1, 2] + list(coincidences.getChannels()),
-    binwidth=100.0 * 1e9,
-    n_values=20,
+    binwidth=1000.0 * 1e9,
+    n_values=5,
 )
 
-selection = device_list[int(input(device_list))][0]
+selection = device_list[int(input(device_list) or 0)][0]
 stage = Thorlabs.KinesisMotor(conn=selection, scale="stage", default_channel=1)
 
 # device initializing
 counter.start()
-stage.move_to(position=0.000, channel=1, scale=True)
-
-while checkstr(arr=stage.get_status(channel=1), keys=["moving_fw", "moving_bk"]):
-    pause(0.001)
-
-print("start detecting")
+move_kinesis(sub_stage=stage, pos = start_point)
 
 
 if __name__ == '__main__':
 
-    steps = np.linspace(start=0, stop=0.002, num=5, endpoint=True)
+    steps = np.linspace(start=start_point, stop=end_point, num=data_num, endpoint=True)
 
-    position_tracking = []
-    for step in steps:
-        stage.move_to(position=step, channel=1, scale=True)
-        pos_now = stage.get_position(channel=1, scale=True)
-        pos_before = -1
-        while not checkstr(stage.get_status(), "settled"):
-            print(stage.get_status(channel=1))
-        position_tracking.append(0)
+    position_tracking = [stage.get_position(channel=1, scale=True)]
+    coincidence_data = []
 
-    plt.plot(position_tracking)
-    plt.show()
+
+    # ticks, labels = tick_setter(_ticks=7, axis_data=steps)
+    # plt.xticks(ticks=ticks, labels=labels)
+    # plt.xlabel("Signal wavelength (nm)")
+    for step in tqdm(steps, ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
+        move_kinesis(sub_stage=stage, pos=step, log=position_tracking)
+        coincidence_data.append(np.sum(a=counter.getData(), axis=1)[2])
+        pause(0.5)
+
+    result = pd.DataFrame(data={'position':(steps-np.average(steps)), 'coincidence counts':coincidence_data})
+    position_log = pd.DataFrame(data={'position':position_tracking})
+
+    result.to_csv(path_or_buf=("./data/measurement_"+datetime.today().strftime("%Y%m%d%H%M")+".csv"))
+    position_log.to_csv(path_or_buf=("./data/position_log_"+datetime.today().strftime("%Y%m%d%H%M")+".csv"))
+
+    fig, ax = plt.subplots(2)
+    result.plot(kind='line', x='position', y='coincidence counts', ax=ax[0])
+    position_log.plot(kind='line', ax=ax[1])
 
     stage.close()
     freeTimeTagger(tagger=tagger)
+
+    plt.show()
+
