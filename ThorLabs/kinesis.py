@@ -9,7 +9,8 @@ from datetime import datetime
 
 start_point = 0.022000
 end_point = 0.023500
-data_num=30
+data_num=10
+select=False
 
 def checkstr(arr, keys):
     val = False
@@ -47,7 +48,13 @@ counter = Counter(
     n_values=5,
 )
 
-selection = device_list[int(input(device_list) or 0)][0]
+selection = '11111111'
+
+if select:
+    selection = device_list[int(input(device_list) or 0)][0]
+else:
+    selection = '27266188'
+
 stage = Thorlabs.KinesisMotor(conn=selection, scale="stage", default_channel=1)
 
 # device initializing
@@ -71,8 +78,9 @@ if __name__ == '__main__':
     position_log = pd.DataFrame(data={'position':position_tracking})
 
     tag = datetime.today().strftime("%Y%m%d%H%M")
-    tags = pd.read_csv(filepath_or_buffer="./datetime.csv", sep=',')
-    tags.append({'datetime':tag})
+    tags = pd.read_csv(filepath_or_buffer="./data/datetime.csv", sep=',', index_col=0)
+    tags = pd.concat(objs=[tags, pd.DataFrame(data={'datetime':[tag]})], ignore_index=True)
+    tags.to_csv(path_or_buf="./data/datetime.csv")
 
     result.to_csv(path_or_buf=("./data/measurement_"+tag+".csv"))
     position_log.to_csv(path_or_buf=("./data/position_log_"+tag+".csv"))
