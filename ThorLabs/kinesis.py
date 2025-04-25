@@ -7,7 +7,7 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 from tqdm import tqdm
 from datetime import datetime
 
-start_point = 0.021500
+start_point = 0.022000
 end_point = 0.023500
 data_num=30
 
@@ -62,10 +62,6 @@ if __name__ == '__main__':
     position_tracking = [stage.get_position(channel=1, scale=True)]
     coincidence_data = []
 
-
-    # ticks, labels = tick_setter(_ticks=7, axis_data=steps)
-    # plt.xticks(ticks=ticks, labels=labels)
-    # plt.xlabel("Signal wavelength (nm)")
     for step in tqdm(steps, ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
         move_kinesis(sub_stage=stage, pos=step, log=position_tracking)
         coincidence_data.append(np.sum(a=counter.getData(), axis=1)[2])
@@ -75,6 +71,9 @@ if __name__ == '__main__':
     position_log = pd.DataFrame(data={'position':position_tracking})
 
     tag = datetime.today().strftime("%Y%m%d%H%M")
+    tags = pd.read_csv(filepath_or_buffer="./datetime.csv", sep=',')
+    tags.append({'datetime':tag})
+
     result.to_csv(path_or_buf=("./data/measurement_"+tag+".csv"))
     position_log.to_csv(path_or_buf=("./data/position_log_"+tag+".csv"))
 
