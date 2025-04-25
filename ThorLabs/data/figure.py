@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
@@ -13,6 +14,8 @@ print(tag)
 
 measurement = pd.read_csv(filepath_or_buffer="./measurement_"+tag+".csv", sep=',', index_col=0)
 position_log = pd.read_csv(filepath_or_buffer="./position_log_"+tag+".csv", sep=',', index_col=0)
+
+new_row = measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
 
 fig, ax = plt.subplots(2)
 measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax[0], s=1)

@@ -27,12 +27,6 @@ def move_kinesis(sub_stage, pos, log=[]):
             log.append(sub_stage.get_position(channel=1, scale=True))
         pause(0.001)
 
-def tick_setter(_ticks, axis_data):
-    length = len(axis_data)
-    arrange = np.arange(length//(2*_ticks), length, length//_ticks)
-    # arrange = np.append(arrange, [int(length/2)])
-    return arrange, axis_data[arrange].astype(np.float16)
-
 # device connecting
 device_list = Thorlabs.list_kinesis_devices()
 tagger = createTimeTagger(resolution=Resolution_Standard)
@@ -67,14 +61,24 @@ if __name__ == '__main__':
     steps = np.linspace(start=start_point, stop=end_point, num=data_num, endpoint=True)
 
     position_tracking = [stage.get_position(channel=1, scale=True)]
+    A_channel_counts = []
+    B_channel_counts = []
     coincidence_data = []
 
     for step in tqdm(steps, ascii=" ▖▘▝▗▚▞█", bar_format='{l_bar}{bar:100}{r_bar}{bar:-100b}'):
         move_kinesis(sub_stage=stage, pos=step, log=position_tracking)
-        coincidence_data.append(np.sum(a=counter.getData(), axis=1)[2])
+        count_data = counter.getData()
+        A_channel_counts.append(np.sum(a=count_data, axis=1)[0])
+        B_channel_counts.append(np.sum(a=count_data, axis=1)[1])
+        coincidence_data.append(np.sum(a=count_data, axis=1)[2])
         pause(0.5)
 
-    result = pd.DataFrame(data={'position':(steps-np.average(steps)), 'coincidence counts':coincidence_data})
+    result = pd.DataFrame(
+        data={'position':(steps-np.average(steps)),
+              'A channel counts':A_channel_counts,
+              'B channel counts':B_channel_counts,
+              'coincidence counts':coincidence_data}
+    )
     position_log = pd.DataFrame(data={'position':position_tracking})
 
     tag = datetime.today().strftime("%Y%m%d%H%M")
