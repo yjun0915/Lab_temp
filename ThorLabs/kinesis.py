@@ -44,7 +44,7 @@ counter = Counter(
     tagger=tagger,
     channels= [1, 2] + list(coincidences.getChannels()),
     binwidth=1000.0 * 1e9,
-    n_values=5,
+    n_values=1,
 )
 
 selection = device_list[int(input(device_list) or 0)][0]
@@ -74,8 +74,9 @@ if __name__ == '__main__':
     result = pd.DataFrame(data={'position':(steps-np.average(steps)), 'coincidence counts':coincidence_data})
     position_log = pd.DataFrame(data={'position':position_tracking})
 
-    result.to_csv(path_or_buf=("./data/measurement_"+datetime.today().strftime("%Y%m%d%H%M")+".csv"))
-    position_log.to_csv(path_or_buf=("./data/position_log_"+datetime.today().strftime("%Y%m%d%H%M")+".csv"))
+    tag = datetime.today().strftime("%Y%m%d%H%M")
+    result.to_csv(path_or_buf=("./data/measurement_"+tag+".csv"))
+    position_log.to_csv(path_or_buf=("./data/position_log_"+tag+".csv"))
 
     fig, ax = plt.subplots(2)
     result.plot(kind='line', x='position', y='coincidence counts', ax=ax[0])
