@@ -7,8 +7,8 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 from tqdm import tqdm
 from datetime import datetime
 
-start_point = 0.021000
-end_point = 0.024000
+start_point = 0.021500
+end_point = 0.023500
 data_num=30
 
 def checkstr(arr, keys):
@@ -43,8 +43,8 @@ coincidences = Coincidences(
 counter = Counter(
     tagger=tagger,
     channels= [1, 2] + list(coincidences.getChannels()),
-    binwidth=1000.0 * 1e9,
-    n_values=1,
+    binwidth=100.0 * 1e9,
+    n_values=5,
 )
 
 selection = device_list[int(input(device_list) or 0)][0]
