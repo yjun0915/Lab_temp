@@ -9,7 +9,9 @@ from datetime import datetime
 
 start_point = 0.022000
 end_point = 0.023500
-data_num=10
+data_num=250
+binwidth = 100.0
+n_value = 60
 select=False
 
 def checkstr(arr, keys):
@@ -38,8 +40,8 @@ coincidences = Coincidences(
 counter = Counter(
     tagger=tagger,
     channels= [1, 2] + list(coincidences.getChannels()),
-    binwidth=100.0 * 1e9,
-    n_values=5,
+    binwidth=binwidth * 1e9,
+    n_values=n_value,
 )
 
 selection = '11111111'
@@ -71,7 +73,7 @@ if __name__ == '__main__':
         A_channel_counts.append(np.sum(a=count_data, axis=1)[0])
         B_channel_counts.append(np.sum(a=count_data, axis=1)[1])
         coincidence_data.append(np.sum(a=count_data, axis=1)[2])
-        pause(0.5)
+        pause(binwidth*n_value*1e-3)
 
     result = pd.DataFrame(
         data={'position':(steps-np.average(steps)),

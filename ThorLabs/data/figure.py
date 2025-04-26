@@ -17,14 +17,18 @@ position_log = pd.read_csv(filepath_or_buffer="./position_log_"+tag+".csv", sep=
 
 new_row = measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
 
-fig, ax = plt.subplots(2)
+fig, ax = plt.subplots(3)
 measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax[0], s=1)
-position_log.plot(kind='line', y='position', ax=ax[1], lw=0.5)
-position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=ax[1], s=0.1)
+new_row.plot(kind='line', ax=ax[1])
+position_log.plot(kind='line', y='position', ax=ax[2], lw=0.5)
+position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=ax[2], s=0.1)
 
 p0 = [0, 0]
 
-coeff, var_matrix = curve_fit(f=line, xdata=measurement['position'], ydata=measurement['coincidence counts'], p0=p0)
+coeff, var_matrix = curve_fit(f=line,
+                              xdata=pd.concat([measurement['position'][0:49], measurement['position'][-50:-1]]),
+                              ydata=pd.concat([measurement['coincidence counts'][0:49], measurement['coincidence counts'][-50:-1]]),
+                              p0=p0)
 
 fitting = pd.DataFrame(data={'x':measurement['position'], 'y':(measurement['position'].mul(coeff[0]).add(coeff[1]))})
 

@@ -1,12 +1,14 @@
 import pyvisa
 
-rm = pyvisa.ResourceManager()
-print(rm.list_resources())
+rm = pyvisa.ResourceManager('@py')
+try:
+    inst = rm.open_resource('ASRL4::INSTR')  # COM3에 해당
+    inst.baud_rate = 9600
+    inst.timeout = 2000
 
-instrument = rm.open_resource('ASRL4::INSTR')
+    inst.write("*IDN?")
+    response = inst.read()
+    print("장비 응답:", response)
 
-instrument.write('SET:TEMP 100')
-
-
-current_temp = instrument.query('READ:TEMP?')
-print(f"현재 온도: {current_temp}°C")
+except Exception as e:
+    print("에러 발생:", e)
