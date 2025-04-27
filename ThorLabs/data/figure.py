@@ -34,6 +34,16 @@ fitting = pd.DataFrame(data={'x':measurement['position'], 'y':(measurement['posi
 
 fitting.plot(kind='line', x='x', y='y', ax=ax[0], lw=0.5, color='r')
 
-# visibility = 1 - (/)
+min_idx = measurement['coincidence counts'].idxmin()
+
+visibility = 1 - (measurement['coincidence counts'][min_idx]/(measurement['position'][min_idx]*coeff[0] + coeff[1]))
+
+visibility_spot = pd.DataFrame(data={
+    'position':[measurement['position'][min_idx], measurement['position'][min_idx]],
+    'coincidence counts':[measurement['coincidence counts'][min_idx], (measurement['position'][min_idx]*coeff[0] + coeff[1])]
+})
+visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax[0], s=1, color='r')
+
+print("Visibility of this data is %.2f"%(visibility*100)+"%")
 
 plt.show()

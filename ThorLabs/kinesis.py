@@ -7,11 +7,11 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 from tqdm import tqdm
 from datetime import datetime
 
-start_point = 0.022000
-end_point = 0.023500
-data_num=250
+start_point = 0.021900
+end_point = 0.023600
+data_num=1000
 binwidth = 100.0
-n_value = 60
+n_value = 100
 select=False
 
 def checkstr(arr, keys):
