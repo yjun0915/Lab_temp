@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import pause
 from pylablib.devices import Thorlabs
 from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTagger, freeTimeTagger
 from tqdm import tqdm
@@ -9,9 +8,9 @@ from datetime import datetime
 
 start_point = 0.021900
 end_point = 0.023600
-data_num=1000
+data_num=30
 binwidth = 100.0
-n_value = 100
+n_value = 5
 select=False
 
 def checkstr(arr, keys):
@@ -27,7 +26,6 @@ def move_kinesis(sub_stage, pos, log=[]):
     while checkstr(arr=sub_stage.get_status(channel=1), keys=["moving_fw", "moving_bk"]):
         if log:
             log.append(sub_stage.get_position(channel=1, scale=True))
-        pause(0.001)
 
 # device connecting
 device_list = Thorlabs.list_kinesis_devices()
@@ -73,7 +71,7 @@ if __name__ == '__main__':
         A_channel_counts.append(np.sum(a=count_data, axis=1)[0])
         B_channel_counts.append(np.sum(a=count_data, axis=1)[1])
         coincidence_data.append(np.sum(a=count_data, axis=1)[2])
-        pause(binwidth*n_value*1e-3)
+        plt.pause(binwidth*n_value*1e-3)
 
     result = pd.DataFrame(
         data={'position':(steps-np.average(steps)),
@@ -94,6 +92,8 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(2)
     result.plot(kind='line', x='position', y='coincidence counts', ax=ax[0])
     position_log.plot(kind='line', ax=ax[1])
+
+    stage.blink(channel=1)
 
     stage.close()
     freeTimeTagger(tagger=tagger)
