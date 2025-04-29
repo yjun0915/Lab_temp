@@ -18,7 +18,7 @@ position_log = pd.read_csv(filepath_or_buffer="./position_log_"+tag+".csv", sep=
 new_row = measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
 
 fig, ax = plt.subplots(1)
-measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=2)
+measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
 measurement.plot(kind='line', x='position', y='coincidence counts', ax=ax)
 #new_row.plot(kind='line', ax=ax[1])
 #position_log.plot(kind='line', y='position', ax=ax[2], lw=0.5)
@@ -33,7 +33,7 @@ coeff, var_matrix = curve_fit(f=line,
 
 fitting = pd.DataFrame(data={'x':measurement['position'], 'y':(measurement['position'].mul(coeff[0]).add(coeff[1]))})
 
-fitting.plot(kind='line', x='x', y='y', ax=ax, lw=0.5, color='r')
+#fitting.plot(kind='line', x='x', y='y', ax=ax, lw=0.5, color='r')
 
 min_idx = measurement['coincidence counts'].idxmin()
 
@@ -43,7 +43,7 @@ visibility_spot = pd.DataFrame(data={
     'position':[measurement['position'][min_idx], measurement['position'][min_idx]],
     'coincidence counts':[measurement['coincidence counts'][min_idx], (measurement['position'][min_idx]*coeff[0] + coeff[1])]
 })
-visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=3, color='r')
+#visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=3, color='r')
 
 print("Visibility of this data is %.2f"%(visibility*100)+"%")
 
