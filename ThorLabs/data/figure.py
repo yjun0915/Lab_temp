@@ -7,29 +7,53 @@ from scipy.optimize import curve_fit
 import matplotlib
 matplotlib.use('TkAgg')
 
+global selection
+
+
 def v_line(x, a, b, c, d, h):
     output_list = []
     for pos in x:
         output_list.append(min(a*pos + b, abs(c*pos + d) + h))
     return output_list
 
+
 def onSelect(event):
-    selection = listbox.curselection()
-    if selection:
-        index = selection[0]
+    _selection = listbox.curselection()
+    if _selection:
+        index = _selection[0]
         value = listbox.get(index)
-        print(f"선택된 항목: {value}")
+        selection = value
+        print(f"선택된 항목: {selection}")
+
+
+def exitClick():
+    window.destroy()
+    window.quit()
+    exit()
+
 
 tags = pd.read_csv(filepath_or_buffer="./datetime.csv", sep=',', index_col=0)
+selection = 36
 
 window = tk.Tk()
-listbox = tk.Listbox(master=window)
-listbox.pack(side=tk.RIGHT, fill=tk.BOTH)
+window.geometry("900x600")
+window.wm_attributes("-topmost", 1)
+
+figure_frame = tk.Frame(master=window, width=600, height=600)
+figure_frame.pack(side=tk.LEFT)
+widget_frame = tk.Frame(master=window, width=300, height=600)
+widget_frame.pack(side=tk.RIGHT)
+
+listbox = tk.Listbox(master=widget_frame)
 for v in tags['datetime']:
     listbox.insert(tk.END, v)
+listbox.pack(side=tk.TOP, fill=tk.BOTH)
 listbox.bind('<<ListboxSelect>>', onSelect)
 
-selection = 36
+exit_button = tk.Button(master=widget_frame, text="EXIT", command=exitClick)
+exit_button.pack(side=tk.BOTTOM, fill=tk.BOTH)
+
+
 tag = tags.loc[selection]["datetime"].astype(str)
 
 measurement = pd.read_csv(filepath_or_buffer="./measurement_"+tag+".csv", sep=',', index_col=0)
@@ -60,7 +84,9 @@ visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax
 
 print("Visibility of this data is %.2f"%(visibility*100)+"%")
 
-canvas = FigureCanvasTkAgg(figure=fig, master=window)
+canvas = FigureCanvasTkAgg(figure=fig, master=figure_frame)
 canvas.draw()
 canvas.get_tk_widget().pack()
+
+
 window.mainloop()
