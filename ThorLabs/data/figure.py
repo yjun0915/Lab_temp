@@ -48,7 +48,7 @@ def make_figure(get_selection):
     position_log.plot(kind='line', y='position', ax=ax[2], lw=0.5)
     position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=ax[2], s=0.1)
 
-    p0 = [0, 50, 0, 0, 0]
+    p0 = [0, 2000, 1, 0, 1000]
     coeff, var_matrix = curve_fit(f=v_line, xdata=measurement['position'], ydata=measurement['coincidence counts'], p0=p0)
 
     fitting = pd.DataFrame(data={'x':measurement['position'], 'y':v_line(measurement['position'], coeff[0], coeff[1], coeff[2], coeff[3], coeff[4])})

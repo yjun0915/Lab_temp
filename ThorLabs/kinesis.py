@@ -8,9 +8,9 @@ from datetime import datetime
 
 start_point = 0.021800
 end_point = 0.023700
-data_num = 61
-binwidth = 100.0
-n_value = 20
+data_num = 45
+binwidth = 1000.0
+n_value = 2
 select=False
 
 def checkstr(arr, keys):
