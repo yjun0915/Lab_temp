@@ -76,6 +76,21 @@ def make_figure(get_selection):
               'efficient':100*measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
               })
 
+    ax.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
+    ax.set_xticks(
+        ticks=np.concatenate([measurement['position'][
+                              int(measurement['position'].shape[0] / 2):0:-int(measurement['position'].shape[0] / 5)],
+                              measurement['position'][
+                              int(measurement['position'].shape[0] / 2):-1:int(measurement['position'].shape[0] / 5)]],
+                             0),
+        labels=(1e3) * np.round(
+            np.concatenate([measurement['position'][int(measurement['position'].shape[0] / 2):0:-int(
+                measurement['position'].shape[0] / 5)], measurement['position'][
+                                                        int(measurement['position'].shape[0] / 2):-1:int(
+                                                            measurement['position'].shape[0] / 5)]], 0), 6)
+
+    )
+
     p0 = [0, measurement['coincidence counts'].mean(), 1, 0, measurement['coincidence counts'].min()]
     coeff, var_matrix = curve_fit(f=v_line, xdata=measurement['position'], ydata=measurement['coincidence counts'], p0=p0)
 
@@ -84,6 +99,13 @@ def make_figure(get_selection):
     min_idx = measurement['coincidence counts'].idxmin()
 
     visibility = 1 - (measurement['coincidence counts'][min_idx]/(measurement['position'][min_idx]*coeff[0] + coeff[1]))
+
+    e_p0 = [0, coin_effi_line['efficient'].mean(), 1, 0, coin_effi_line['efficient'].min()]
+    e_coeff, e_var_matrix = curve_fit(f=v_line, xdata=coin_effi_line['position'], ydata=coin_effi_line['efficient'], p0=e_p0)
+
+    e_fitting = pd.DataFrame(data={'x':coin_effi_line['position'], 'y':v_line(coin_effi_line['position'], e_coeff[0], e_coeff[1], e_coeff[2], e_coeff[3], e_coeff[4])})
+    e_min_idx = coin_effi_line['efficient'].idxmin()
+    e_visibility = 1 - (coin_effi_line['efficient'][e_min_idx]/(coin_effi_line['position'][e_min_idx]*e_coeff[0] + e_coeff[1]))
 
     visibility_spot = pd.DataFrame(data={
         'position':[measurement['position'][min_idx], measurement['position'][min_idx]],
@@ -98,21 +120,13 @@ def make_figure(get_selection):
         visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=3, color='r')
         ax.axis('on')
         ax.set_ylim(ymin=0)
-        ax.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
-        float_formatter = "{:.2f}".format
-        ax.set_xticks(
-            ticks=np.concatenate([measurement['position'][int(measurement['position'].shape[0]/2):0:-int(measurement['position'].shape[0]/5)], measurement['position'][int(measurement['position'].shape[0]/2):-1:int(measurement['position'].shape[0]/5)]], 0),
-            labels=(1e3)*np.round(np.concatenate([measurement['position'][int(measurement['position'].shape[0] / 2):0:-int(
-                measurement['position'].shape[0] / 5)], measurement['position'][
-                                                        int(measurement['position'].shape[0] / 2):-1:int(
-                                                            measurement['position'].shape[0] / 5)]], 0), 6)
-
-        )
 
     if s_efficient:
         coin_effi_line.plot(kind='scatter', x='position', y='efficient', ax=t_efficient)
+        e_fitting.plot(kind='line', x='x', y='y', ax=t_efficient, color='r', legend=False)
         t_efficient.axis('on')
         t_efficient.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
+        print(e_visibility*100)
 
     if s_position:
         position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=t_position, s=0.1)
