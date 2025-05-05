@@ -7,10 +7,11 @@ from scipy.optimize import curve_fit
 import matplotlib
 matplotlib.use('TkAgg')
 
-visibility = 0.0
+# Global valiables
 fig, ax = plt.subplots(3)
 
 
+# Event functions
 def v_line(x, a, b, c, d, h):
     output_list = []
     for pos in x:
@@ -32,6 +33,7 @@ def exitClick():
     exit()
 
 
+# Main figure function
 def make_figure(get_selection):
     global canvas
     global fig, ax
@@ -67,32 +69,51 @@ def make_figure(get_selection):
     })
     visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax[0], s=3, color='r')
 
-    print("Visibility of this data is %.2f"%(visibility*100)+"%")
     display.config(text="Visibility of this data is %.2f"%(visibility*100)+"%")
 
     ax[0].set_ylim(ymin=0)
     canvas.draw()
     canvas.get_tk_widget().pack()
 
+width = 900
+height = 600
+fig_width = 600
+wgt_width = width - fig_width
 
 tags = pd.read_csv(filepath_or_buffer="./datetime.csv", sep=',', index_col=0)
 
 window = tk.Tk()
-window.geometry("900x600")
+window.geometry("%dx%d"%(width, height))
 window.wm_attributes("-topmost", 1)
 
-figure_frame = tk.Frame(master=window, width=600, height=600)
+figure_frame = tk.Frame(master=window, width=fig_width, height=height)
 figure_frame.pack(side=tk.LEFT)
-widget_frame = tk.Frame(master=window, width=300, height=600)
+widget_frame = tk.Frame(master=window, width=wgt_width, height=height)
 widget_frame.pack(side=tk.RIGHT)
 
-listbox = tk.Listbox(master=widget_frame)
-for v in tags['datetime']:
-    listbox.insert(tk.END, v)
+scroll_frame = tk.Frame(master=widget_frame)
+scrollbar = tk.Scrollbar(master=scroll_frame)
+scrollbar.pack(side=tk.RIGHT, fill="y")
+listbox = tk.Listbox(master=scroll_frame, yscrollcommand=scrollbar.set)
+for tag in tags['datetime']:
+    listbox.insert(tk.END, tag)
 listbox.pack(side=tk.TOP, fill=tk.BOTH)
 listbox.bind('<<ListboxSelect>>', onSelect)
+scrollbar.config(command=listbox.yview)
+scroll_frame.pack()
 
-display = tk.Label(master=widget_frame, height=1, width=300, text='asdf')
+check_box_field = tk.Frame(master=widget_frame, width=wgt_width, height=60)
+check_box_field.pack()
+plots = [tk.IntVar(), tk.IntVar(), tk.IntVar()]
+checkers = [
+    tk.Checkbutton(master=check_box_field, text='counts data', variable=plots[0], width=wgt_width),
+    tk.Checkbutton(master=check_box_field, text='efficiency data', variable=plots[1], width=wgt_width),
+    tk.Checkbutton(master=check_box_field, text='position data', variable=plots[2], width=wgt_width),
+]
+for checker in checkers:
+    checker.pack()
+
+display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='')
 display.pack(side=tk.TOP, fill=tk.BOTH)
 
 exit_button = tk.Button(master=widget_frame, text="EXIT", command=exitClick)
