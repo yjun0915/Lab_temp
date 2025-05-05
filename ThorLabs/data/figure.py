@@ -33,6 +33,24 @@ def exitClick():
     exit()
 
 
+def state_count():
+    global s_count
+    s_count = not s_count
+    print(s_count)
+
+
+def state_efficient():
+    global s_efficient
+    s_efficient = not s_efficient
+    print(s_efficient)
+
+
+def state_position():
+    global s_position
+    s_position = not s_position
+    print(s_position)
+
+
 # Main figure function
 def make_figure(get_selection):
     global canvas
@@ -102,16 +120,17 @@ listbox.bind('<<ListboxSelect>>', onSelect)
 scrollbar.config(command=listbox.yview)
 scroll_frame.pack()
 
-check_box_field = tk.Frame(master=widget_frame, width=wgt_width, height=60, borderwidth=2, relief='sunken')
-check_box_field.pack()
-plots = [tk.IntVar(), tk.IntVar(), tk.IntVar()]
-checkers = [
-    tk.Checkbutton(master=check_box_field, text='counts data', variable=plots[0], width=wgt_width),
-    tk.Checkbutton(master=check_box_field, text='efficiency data', variable=plots[1], width=wgt_width),
-    tk.Checkbutton(master=check_box_field, text='position data', variable=plots[2], width=wgt_width),
-]
-for checker in checkers:
-    checker.pack()
+state_field = tk.Frame(master=widget_frame, width=wgt_width, height=60)
+state_field.pack()
+s_count = True
+s_efficient = False
+s_position = False
+check_count = tk.Button(master=state_field, text='counts', command=state_count)
+check_efficient = tk.Button(master=state_field, text='efficiency', command=state_efficient)
+check_position = tk.Button(master=state_field, text='position', command=state_position)
+check_count.grid(row=0, column=0)
+check_efficient.grid(row=0, column=1)
+check_position.grid(row=0, column=2)
 
 display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
 display.pack(side=tk.TOP, fill=tk.BOTH)
