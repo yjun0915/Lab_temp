@@ -102,7 +102,7 @@ listbox.bind('<<ListboxSelect>>', onSelect)
 scrollbar.config(command=listbox.yview)
 scroll_frame.pack()
 
-check_box_field = tk.Frame(master=widget_frame, width=wgt_width, height=60)
+check_box_field = tk.Frame(master=widget_frame, width=wgt_width, height=60, borderwidth=2, relief='sunken')
 check_box_field.pack()
 plots = [tk.IntVar(), tk.IntVar(), tk.IntVar()]
 checkers = [
@@ -113,7 +113,7 @@ checkers = [
 for checker in checkers:
     checker.pack()
 
-display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='')
+display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
 display.pack(side=tk.TOP, fill=tk.BOTH)
 
 exit_button = tk.Button(master=widget_frame, text="EXIT", command=exitClick)
