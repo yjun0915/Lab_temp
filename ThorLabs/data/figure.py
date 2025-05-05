@@ -8,8 +8,10 @@ import matplotlib
 matplotlib.use('TkAgg')
 
 # Global valiables
-fig, ax = plt.subplots(3)
-
+fig, ax = plt.subplots()
+t_efficient = ax.twinx()
+t_position = ax.twinx()
+g_selection = 0
 
 # Event functions
 def v_line(x, a, b, c, d, h):
@@ -22,9 +24,10 @@ def v_line(x, a, b, c, d, h):
 def onSelect(event):
     _selection = listbox.curselection()
     if _selection:
+        global g_selection
         index = _selection[0]
-        value = str(listbox.get(index))
-        make_figure(get_selection=value)
+        g_selection = str(listbox.get(index))
+        make_figure(get_selection=g_selection)
 
 
 def exitClick():
@@ -34,48 +37,49 @@ def exitClick():
 
 
 def state_count():
-    global s_count
+    global s_count, g_selection
     s_count = not s_count
-    print(s_count)
+    make_figure(get_selection=g_selection)
 
 
 def state_efficient():
-    global s_efficient
+    global s_efficient, g_selection
     s_efficient = not s_efficient
-    print(s_efficient)
+    make_figure(get_selection=g_selection)
 
 
 def state_position():
-    global s_position
+    global s_position, g_selection
     s_position = not s_position
-    print(s_position)
+    make_figure(get_selection=g_selection)
 
 
 # Main figure function
 def make_figure(get_selection):
     global canvas
-    global fig, ax
+    global fig, ax, t_efficient, t_position
+    global s_count, s_efficient, s_position
 
-    ax[0].cla()
-    ax[1].cla()
-    ax[2].cla()
+    ax.cla()
+    ax.axis('off')
+    t_efficient.cla()
+    t_efficient.axis('off')
+    t_position.cla()
+    t_position.axis('off')
 
     tag = get_selection
 
     measurement = pd.read_csv(filepath_or_buffer="./measurement_"+tag+".csv", sep=',', index_col=0)
     position_log = pd.read_csv(filepath_or_buffer="./position_log_"+tag+".csv", sep=',', index_col=0)
-    new_row = measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
-
-    measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax[0], s=5)
-    new_row.plot(kind='line', ax=ax[1])
-    position_log.plot(kind='line', y='position', ax=ax[2], lw=0.5)
-    position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=ax[2], s=0.1)
+    coin_effi_line = pd.DataFrame(
+        data={'position':measurement['position'],
+              'efficient':100*measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
+              })
 
     p0 = [0, measurement['coincidence counts'].mean(), 1, 0, measurement['coincidence counts'].min()]
     coeff, var_matrix = curve_fit(f=v_line, xdata=measurement['position'], ydata=measurement['coincidence counts'], p0=p0)
 
     fitting = pd.DataFrame(data={'x':measurement['position'], 'y':v_line(measurement['position'], coeff[0], coeff[1], coeff[2], coeff[3], coeff[4])})
-    fitting.plot(kind='line', x='x', y='y', ax=ax[0], color='r', legend=False)
 
     min_idx = measurement['coincidence counts'].idxmin()
 
@@ -85,11 +89,37 @@ def make_figure(get_selection):
         'position':[measurement['position'][min_idx], measurement['position'][min_idx]],
         'coincidence counts':[measurement['coincidence counts'][min_idx], (measurement['position'][min_idx]*coeff[0] + coeff[1])]
     })
-    visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax[0], s=3, color='r')
 
     display.config(text="Visibility of this data is %.2f"%(visibility*100)+"%")
 
-    ax[0].set_ylim(ymin=0)
+    if s_count:
+        measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
+        fitting.plot(kind='line', x='x', y='y', ax=ax, color='r', legend=False)
+        visibility_spot.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=3, color='r')
+        ax.axis('on')
+        ax.set_ylim(ymin=0)
+        ax.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
+        float_formatter = "{:.2f}".format
+        ax.set_xticks(
+            ticks=np.concatenate([measurement['position'][int(measurement['position'].shape[0]/2):0:-int(measurement['position'].shape[0]/5)], measurement['position'][int(measurement['position'].shape[0]/2):-1:int(measurement['position'].shape[0]/5)]], 0),
+            labels=(1e3)*np.round(np.concatenate([measurement['position'][int(measurement['position'].shape[0] / 2):0:-int(
+                measurement['position'].shape[0] / 5)], measurement['position'][
+                                                        int(measurement['position'].shape[0] / 2):-1:int(
+                                                            measurement['position'].shape[0] / 5)]], 0), 6)
+
+        )
+
+    if s_efficient:
+        coin_effi_line.plot(kind='scatter', x='position', y='efficient', ax=t_efficient)
+        t_efficient.axis('on')
+        t_efficient.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
+
+    if s_position:
+        position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=t_position, s=0.1)
+        t_position.axis('on')
+        t_position.spines.right.set_position(("axes", 1.1))
+        t_position.set_ylabel('position')
+
     canvas.draw()
     canvas.get_tk_widget().pack()
 
@@ -140,6 +170,7 @@ exit_button.pack(side=tk.TOP, fill=tk.BOTH)
 
 canvas = FigureCanvasTkAgg(figure=fig, master=figure_frame)
 
-make_figure(get_selection=str(tags.loc[0]['datetime']))
+g_selection = str(tags.loc[0]['datetime'])
+make_figure(get_selection=g_selection)
 
 window.mainloop()
