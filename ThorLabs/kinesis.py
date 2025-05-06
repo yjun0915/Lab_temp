@@ -6,8 +6,8 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 from tqdm import tqdm
 from datetime import datetime
 
-start_point = 0.021800
-end_point = 0.023700
+start_point = 0.021800 + 0.0000158
+end_point = 0.023700 + 0.0000158
 data_num = 25
 binwidth = 1000.0
 n_value = 1
