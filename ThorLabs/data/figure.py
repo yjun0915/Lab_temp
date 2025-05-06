@@ -170,12 +170,15 @@ check_position.grid(row=0, column=2)
 display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
 display.pack(side=tk.TOP, fill=tk.BOTH)
 
+description = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
+description.pack(side=tk.TOP, fill=tk.BOTH)
+
 exit_button = tk.Button(master=widget_frame, text="EXIT", command=exitClick)
 exit_button.pack(side=tk.TOP, fill=tk.BOTH)
 
 canvas = FigureCanvasTkAgg(figure=fig, master=figure_frame)
 
-g_selection = str(tags.loc[0]['datetime'])
+g_selection = str(int(tags.loc[0]['datetime']))
 make_figure(get_selection=g_selection)
 
 window.mainloop()

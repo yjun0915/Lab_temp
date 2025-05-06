@@ -9,7 +9,7 @@ def line(x, a, b):
 tags = pd.read_csv(filepath_or_buffer="./datetime.csv", sep=',', index_col=0)
 fig, ax = plt.subplots(1)
 
-for idx in range(19, 28, 4):
+for idx in range(44, 47, 1):
     selection = idx
     tag = tags.loc[selection]["datetime"].astype(str)
 

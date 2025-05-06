@@ -8,37 +8,35 @@ pwd = os.path.realpath(__file__)
 fig = plt.figure(num=1, figsize=(13, 4))
 grids = gridspec.GridSpecFromSubplotSpec(nrows=1, ncols=4, width_ratios=[10, 10, 10, 0.5], subplot_spec=gridspec.GridSpec(nrows=1, ncols=1)[0], wspace=0.05)
 
-temperature = 19
-
-domain = (620, 1000)
-step = 1000
+temperature = 109
+domain = (700, 920)
+step = 500
 figure_ticks = 4
+
 
 def tick_setter(_ticks, axis_data):
     length = len(axis_data)
     arrange = np.arange(length//(2*_ticks), length, length//_ticks)
-    # arrange = np.append(arrange, [int(length/2)])
     return arrange, axis_data[arrange].astype(np.float16)
 
-def dn_z_dt(n, T, wavelength_mat):
-    if np.average(wavelength_mat) < 0.53:
-        return  n
-    elif (np.average(wavelength_mat) >= 0.53) and (np.average(wavelength_mat) <= 1.445):
-        dn = ((0.9221*np.reciprocal(np.pow(wavelength_mat, 3))) - (2.9220*np.reciprocal(np.pow(wavelength_mat, 2))) + (3.6677*np.reciprocal(wavelength_mat)) - 0.1897) * 1e-5
-        n = n
-        return  n
-    else:
-        dn = ((-0.5523*np.reciprocal(wavelength_mat)) + 3.3920 - (1.7101*wavelength_mat) + (0.3424*np.pow(wavelength_mat, 2))) * 1e-5
-        n = n
-        return n
 
-def n_z(wavelength_mat, _temp):
-    _wavelength_mat = wavelength_mat * 1e-3           # micrometer
-    squared_wavelength_mat = np.pow(_wavelength_mat, 2)
-#    n_z_mat = np.pow(4.59423 + (0.06206*np.reciprocal(squared_wavelength_mat - 0.04763)) + (110.80672*np.reciprocal(squared_wavelength_mat - 86.12171)), 1/2)
-    n_z_mat = np.pow(2.12725 + (1.18431*np.reciprocal(1-0.0514852*np.reciprocal(squared_wavelength_mat))) + (0.6603*np.reciprocal(1-100.00507*np.reciprocal(squared_wavelength_mat))) - 0.00968956*squared_wavelength_mat, 1/2)
-    n_z_mat = dn_z_dt(n_z_mat, _temp, _wavelength_mat)
-    return n_z_mat * 1e3
+def n_z(wavelength_nm: np.ndarray, _temp: float) -> np.ndarray:
+    wavelength_um = wavelength_nm / 1000.0
+    ΔT = _temp - 25.0
+
+    A0, A1 = 1.14886, 1e-4
+    B0, B1 = 5.69293, 1e-3
+    C0, C1 = -2.42924, 1e-3
+
+    A = A0 + A1 * ΔT
+    B = B0 + B1 * ΔT
+    C = C0 + C1 * ΔT
+
+    λ2 = wavelength_um**2
+    n_squared = A + B / (λ2 - C)
+    return np.sqrt(n_squared)
+
+
 
 c = 299792458 * 1e9         # nanometer per second
 
@@ -69,7 +67,7 @@ frequency_pump =  (2*np.pi*c)/wavelength_pump                               # ra
 
 amplitude_X, amplitude_Y = np.meshgrid(frequency_signal, frequency_idler)       # 2-dimensional, radian per second  (angular frequency space)
 
-amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump)/(2*np.pi*c/bandwidth_pump), 2))
+amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump)/(c/bandwidth_pump), 2))
 
 
 wavenumber_signal = np.reciprocal(wavelength_signal*n_z(wavelength_signal, temperature)) * (2*np.pi)    # inverse nanometer (wave number)
@@ -79,7 +77,7 @@ wavenumber_pump = (2*np.pi)/(wavelength_pump*n_z(wavelength_pump, temperature)) 
 PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
 
 phase_mismatch = -wavenumber_pump - PMA_X + PMA_Y + (2*np.pi/poling_period)
-phase_matching_amplitude = np.sinc(phase_mismatch*L/2 - 3158)
+phase_matching_amplitude = np.sinc(phase_mismatch*L/2)
 
 ax1 = fig.add_subplot(grids[0])
 plt.pcolor(amplitude)
