@@ -10,7 +10,7 @@ start_point = 0.021800
 end_point = 0.023700
 data_num = 45
 binwidth = 1000.0
-n_value = 2
+n_value = 1
 select=False
 
 def checkstr(arr, keys):
@@ -41,6 +41,7 @@ counter = Counter(
     binwidth=binwidth * 1e9,
     n_values=n_value,
 )
+tagger.setInputDelay(channel=1, delay=111)
 
 selection = '11111111'
 
