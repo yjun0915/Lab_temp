@@ -27,6 +27,13 @@ def onSelect(event):
         global g_selection
         index = _selection[0]
         g_selection = str(listbox.get(index))
+        description.config(text=
+                           f""
+                           f"< description >------------------------\n"
+                           f"|                                                  |\n"
+                           f"|                     {str(tags.loc[index]["description"])}                     |\n"
+                           f"|                                                  |\n"
+                           f"-----------------------------------------")
         make_figure(get_selection=g_selection)
 
 
@@ -170,7 +177,7 @@ check_position.grid(row=0, column=2)
 display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
 display.pack(side=tk.TOP, fill=tk.BOTH)
 
-description = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
+description = tk.Label(master=widget_frame, height=5, width=wgt_width, text='')
 description.pack(side=tk.TOP, fill=tk.BOTH)
 
 exit_button = tk.Button(master=widget_frame, text="EXIT", command=exitClick)
