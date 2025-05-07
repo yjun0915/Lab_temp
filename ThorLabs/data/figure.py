@@ -115,12 +115,9 @@ def make_figure(get_selection):
     visibility = 1 - (measurement['coincidence counts'][min_idx]/(measurement['position'][min_idx]*coeff[0] + coeff[1]))
     acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*10*1e-12
 
-    fit_visibility = 1 - fitting['y'][2]/(coeff[1] + coeff[0]*fitting_position[2])
+    fit_visibility = 1 - (fitting['y'][2]-acc)/(coeff[1] + coeff[0]*fitting_position[2]-acc)
 
-    print(fitting['y'][2] - acc)
-    print(fit_visibility)
-
-    display.config(text="Visibility of this data is %.2f"%(visibility*100)+"%")
+    display.config(text="Visibility of this data is %.2f"%(fit_visibility*100)+"%")
 
     if s_count:
         measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
