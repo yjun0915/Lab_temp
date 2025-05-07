@@ -101,18 +101,24 @@ def make_figure(get_selection):
     p0 = [0, measurement['coincidence counts'].mean(), 1, 0, measurement['coincidence counts'].min()]
     coeff, var_matrix = curve_fit(f=v_line, xdata=measurement['position'], ydata=measurement['coincidence counts'], p0=p0)
 
-    fitting = pd.DataFrame(data={'x':measurement['position'], 'y':v_line(measurement['position'], coeff[0], coeff[1], coeff[2], coeff[3], coeff[4])})
+    fitting_position = [
+        measurement['position'][0],
+        (coeff[4] - coeff[1] - abs(coeff[3]))/(coeff[0] + abs(coeff[2])),
+        -abs(coeff[3])/abs(coeff[2]),
+        (coeff[4] - coeff[1] + abs(coeff[3])) / (coeff[0] - abs(coeff[2])),
+        measurement['position'].iloc[-1]
+    ]
+    fitting = pd.DataFrame(data={'x':fitting_position, 'y':v_line(fitting_position, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4])})
 
     min_idx = measurement['coincidence counts'].idxmin()
 
     visibility = 1 - (measurement['coincidence counts'][min_idx]/(measurement['position'][min_idx]*coeff[0] + coeff[1]))
     acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*10*1e-12
-    print(measurement['coincidence counts'][min_idx]-acc,(measurement['position'][min_idx]*coeff[0] + coeff[1])-acc)
 
-    e_p0 = [0, coin_effi_line['efficient'].mean(), 1, 0, coin_effi_line['efficient'].min()]
-    e_coeff, e_var_matrix = curve_fit(f=v_line, xdata=coin_effi_line['position'], ydata=coin_effi_line['efficient'], p0=e_p0)
+    fit_visibility = 1 - fitting['y'][2]/(coeff[1] + coeff[0]*fitting_position[2])
 
-    e_fitting = pd.DataFrame(data={'x':coin_effi_line['position'], 'y':v_line(coin_effi_line['position'], e_coeff[0], e_coeff[1], e_coeff[2], e_coeff[3], e_coeff[4])})
+    print(fitting['y'][2] - acc)
+    print(fit_visibility)
 
     display.config(text="Visibility of this data is %.2f"%(visibility*100)+"%")
 
@@ -126,7 +132,6 @@ def make_figure(get_selection):
 
     if s_efficient:
         coin_effi_line.plot(kind='scatter', x='position', y='efficient', ax=t_efficient)
-        e_fitting.plot(kind='line', x='x', y='y', ax=t_efficient, color='r', legend=False)
         t_efficient.axis('on')
         t_efficient.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
 

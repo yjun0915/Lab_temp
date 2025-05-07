@@ -58,7 +58,7 @@ bandwidth_pump = float(input("Gaussian distributed Pump spectrum bandwidth (nm) 
 poling_period = float(input("Poling period of the SPDC crystal (㎛) :") or val[2]) * 1e3             # nanometer
 L = float(input("length of the SPDC crystal (mm) :") or val[3]) * 1e6                               # nanometer
 
-print("start calculation with value :", [wavelength_pump, bandwidth_pump, poling_period*1e-3, L*1e-6])
+print(f"start calculation with value :{wavelength_pump} nm, {bandwidth_pump} nm, {poling_period * 1e-3} ㎛, {L * 1e-6} mm")
 
 
 frequency_signal = np.reciprocal(wavelength_signal) * (2*np.pi*c)           # radian per second (angular frequency)
@@ -67,16 +67,16 @@ frequency_pump =  (2*np.pi*c)/wavelength_pump                               # ra
 
 amplitude_X, amplitude_Y = np.meshgrid(frequency_signal, frequency_idler)       # 2-dimensional, radian per second  (angular frequency space)
 
-amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump)/(c/bandwidth_pump), 2))
+amplitude = np.exp(-1 * np.pow((amplitude_X + amplitude_Y - frequency_pump)/(2*np.pi*c/bandwidth_pump), 2))
 
 
-wavenumber_signal = np.reciprocal(wavelength_signal*n_z(wavelength_signal, temperature)) * (2*np.pi)    # inverse nanometer (wave number)
-wavenumber_idler = np.reciprocal(wavelength_idler*n_z(wavelength_idler, temperature)) * (2*np.pi)       # inverse nanometer (wave number)
-wavenumber_pump = (2*np.pi)/(wavelength_pump*n_z(wavelength_pump, temperature))                         # inverse nanometer (wave number)
+wavenumber_signal = np.reciprocal(wavelength_signal) * n_z(wavelength_signal, temperature) * (2*np.pi)    # inverse nanometer (wave number)
+wavenumber_idler = np.reciprocal(wavelength_idler) * n_z(wavelength_idler, temperature) * (2*np.pi)       # inverse nanometer (wave number)
+wavenumber_pump = (2*np.pi)*n_z(np.array(wavelength_pump), temperature)/wavelength_pump                   # inverse nanometer (wave number)
 
 PMA_X, PMA_Y = np.meshgrid(wavenumber_signal, wavenumber_idler)
 
-phase_mismatch = -wavenumber_pump - PMA_X + PMA_Y + (2*np.pi/poling_period)
+phase_mismatch = (wavenumber_pump + (2*np.pi/poling_period) - PMA_X - PMA_Y)/2
 phase_matching_amplitude = np.sinc(phase_mismatch*L/2)
 
 ax1 = fig.add_subplot(grids[0])
