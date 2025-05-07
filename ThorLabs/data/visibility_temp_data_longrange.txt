@@ -1,4 +1,4 @@
-,temp,visibility
+,temperature,visibility
 5,108.50,0.4813
 6,108.60,0.5406
 7,108.70,0.5831

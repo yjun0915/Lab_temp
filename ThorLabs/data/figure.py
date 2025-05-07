@@ -106,6 +106,8 @@ def make_figure(get_selection):
     min_idx = measurement['coincidence counts'].idxmin()
 
     visibility = 1 - (measurement['coincidence counts'][min_idx]/(measurement['position'][min_idx]*coeff[0] + coeff[1]))
+    acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*10*1e-12
+    print(measurement['coincidence counts'][min_idx]-acc,(measurement['position'][min_idx]*coeff[0] + coeff[1])-acc)
 
     e_p0 = [0, coin_effi_line['efficient'].mean(), 1, 0, coin_effi_line['efficient'].min()]
     e_coeff, e_var_matrix = curve_fit(f=v_line, xdata=coin_effi_line['position'], ydata=coin_effi_line['efficient'], p0=e_p0)
@@ -118,6 +120,8 @@ def make_figure(get_selection):
         measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
         fitting.plot(kind='line', x='x', y='y', ax=ax, color='r', legend=False)
         ax.axis('on')
+        ax.set_ylabel("coincidence counts")
+        ax.set_xlabel("position (mm)")
         ax.set_ylim(ymin=0)
 
     if s_efficient:
