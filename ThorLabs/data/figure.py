@@ -17,7 +17,7 @@ g_selection = 0
 def v_line(x, a, b, c, d, h):
     output_list = []
     for pos in x:
-        output_list.append(min(a + b, abs(c*pos + d) + h))
+        output_list.append(min(a*pos + b, abs(c*pos + d) + h))
     return output_list
 
 
@@ -82,7 +82,6 @@ def make_figure(get_selection):
     tag = get_selection
 
     measurement = pd.read_csv(filepath_or_buffer="./measurement_"+tag+".csv", sep=',', index_col=0)
-    position_log = pd.read_csv(filepath_or_buffer="./position_log_"+tag+".csv", sep=',', index_col=0)
     coin_effi_line = pd.DataFrame(
         data={'position':measurement['position'],
               'efficient':100*measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
@@ -110,14 +109,13 @@ def make_figure(get_selection):
         measurement['position'][0],
         (coeff[4] - coeff[1] - abs(coeff[3]))/(coeff[0] + abs(coeff[2])),
         -abs(coeff[3])/abs(coeff[2]),
-        (coeff[4] - coeff[1] + abs(coeff[3])) / (coeff[0] - abs(coeff[2])),
+        (coeff[4] - coeff[1] + abs(coeff[3]))/(coeff[0] - abs(coeff[2])),
         measurement['position'].iloc[-1]
     ]
     fitting = pd.DataFrame(data={'x':fitting_position, 'y':v_line(fitting_position, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4])})
 
     min_idx = measurement['coincidence counts'].idxmin()
 
-    visibility = 1 - (measurement['coincidence counts'][min_idx]/(measurement['position'][min_idx]*coeff[0] + coeff[1]))
     acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*10*1e-12
 
     fit_visibility = 1 - (fitting['y'][2]-acc)/(coeff[1] + coeff[0]*fitting_position[2]-acc)

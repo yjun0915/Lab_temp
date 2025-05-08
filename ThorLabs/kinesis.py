@@ -8,9 +8,10 @@ from datetime import datetime
 
 start_point = 0.021550
 end_point = 0.023550
-data_num = 35
-binwidth = 100.0
+data_num = 75
+binwidth = 3000.0
 n_value = 2
+delay = [0, 24]
 select=False
 
 def checkstr(arr, keys):
@@ -41,8 +42,8 @@ counter = Counter(
     binwidth=binwidth * 1e9,
     n_values=n_value,
 )
-tagger.setInputDelay(channel=1, delay=0)
-tagger.setInputDelay(channel=2, delay=24)
+tagger.setInputDelay(channel=1, delay=delay[0])
+tagger.setInputDelay(channel=2, delay=delay[1])
 
 selection = '11111111'
 
