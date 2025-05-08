@@ -21,6 +21,11 @@ def v_line(x, a, b, c, d, h):
     return output_list
 
 
+def executeClick():
+    global start_point, end_point, data_num, binwidth, nvalue, description_write
+    print([start_point.get(), end_point.get(), data_num.get(), binwidth.get(), nvalue.get(), description_write.get()])
+
+
 def onSelect(event):
     _selection = listbox.curselection()
     if _selection:
@@ -55,9 +60,9 @@ def state_efficient():
     make_figure(get_selection=g_selection)
 
 
-def state_position():
-    global s_position, g_selection
-    s_position = not s_position
+def state_fitting():
+    global s_fitting, g_selection
+    s_fitting = not s_fitting
     make_figure(get_selection=g_selection)
 
 
@@ -65,7 +70,7 @@ def state_position():
 def make_figure(get_selection):
     global canvas
     global fig, ax, t_efficient, t_position
-    global s_count, s_efficient, s_position
+    global s_count, s_efficient, s_fitting
 
     ax.cla()
     ax.axis('off')
@@ -119,27 +124,23 @@ def make_figure(get_selection):
 
     display.config(text="Visibility of this data is %.2f"%(fit_visibility*100)+"%")
 
-    if s_count:
-        measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
-        fitting.plot(kind='line', x='x', y='y', ax=ax, color='r', legend=False)
-        ax.axis('on')
-        ax.set_ylabel("coincidence counts")
-        ax.set_xlabel("position (mm)")
-        ax.set_ylim(ymin=0)
-
     if s_efficient:
         coin_effi_line.plot(kind='scatter', x='position', y='efficient', ax=t_efficient)
         t_efficient.axis('on')
         t_efficient.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
 
-    if s_position:
-        position_log.reset_index().plot(kind='scatter', x='index', y='position', ax=t_position, s=0.1)
-        t_position.axis('on')
-        t_position.spines.right.set_position(("axes", 1.1))
-        t_position.set_ylabel('position')
+    if s_fitting:
+        fitting.plot(kind='line', x='x', y='y', ax=ax, color='r', legend=False)
+
+    if s_count:
+        measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
+
+        ax.axis('on')
+        ax.set_ylabel("coincidence counts")
+        ax.set_xlabel("position (mm)")
+        ax.set_ylim(ymin=0)
 
     canvas.draw()
-    canvas.get_tk_widget().pack()
 
 width = 900
 height = 600
@@ -157,7 +158,40 @@ figure_frame.pack(side=tk.LEFT)
 widget_frame = tk.Frame(master=window, width=wgt_width, height=height)
 widget_frame.pack(side=tk.RIGHT)
 
-scroll_frame = tk.Frame(master=widget_frame)
+# execute experiment
+experiment_frame = tk.Frame(master=widget_frame, width=wgt_width, borderwidth=5, relief='ridge')
+experiment_frame.pack(fill=tk.BOTH)
+tk.Label(master=experiment_frame, text='[ Experiment execution ]').pack()
+
+inputs = tk.Frame(master=experiment_frame)
+inputs.pack()
+tk.Label(master=inputs, text='Start position').grid(row=0, column=0)
+start_point = tk.Entry(master=inputs)
+start_point.grid(row=0, column=1)
+tk.Label(master=inputs, text='End position').grid(row=1, column=0)
+end_point = tk.Entry(master=inputs)
+end_point.grid(row=1, column=1)
+tk.Label(master=inputs, text='Number of data').grid(row=2, column=0)
+data_num = tk.Entry(master=inputs)
+data_num.grid(row=2, column=1)
+tk.Label(master=inputs, text='Bin width').grid(row=3, column=0)
+binwidth = tk.Entry(master=inputs)
+binwidth.grid(row=3, column=1)
+tk.Label(master=inputs, text='Number of n').grid(row=4, column=0)
+nvalue = tk.Entry(master=inputs)
+nvalue.grid(row=4, column=1)
+tk.Label(master=inputs, text='Description').grid(row=5, column=0)
+description_write = tk.Entry(master=inputs)
+description_write.grid(row=5, column=1)
+
+tk.Button(master=experiment_frame, text='Execute', command=executeClick).pack()
+
+# data selection
+dataselection_frame = tk.Frame(master=widget_frame, width=wgt_width, borderwidth=5, relief='ridge')
+dataselection_frame.pack(fill=tk.BOTH)
+tk.Label(master=dataselection_frame, text="[ Data Selection ]").pack()
+
+scroll_frame = tk.Frame(master=dataselection_frame)
 scrollbar = tk.Scrollbar(master=scroll_frame)
 scrollbar.pack(side=tk.RIGHT, fill="y")
 listbox = tk.Listbox(master=scroll_frame, yscrollcommand=scrollbar.set)
@@ -168,30 +202,42 @@ listbox.bind('<<ListboxSelect>>', onSelect)
 scrollbar.config(command=listbox.yview)
 scroll_frame.pack()
 
-state_field = tk.Frame(master=widget_frame, width=wgt_width, height=60)
+state_field = tk.Frame(master=dataselection_frame, width=wgt_width, height=60)
 state_field.pack()
 s_count = True
 s_efficient = False
-s_position = False
+s_fitting = True
 check_count = tk.Button(master=state_field, text='counts', command=state_count)
 check_efficient = tk.Button(master=state_field, text='efficiency', command=state_efficient)
-check_position = tk.Button(master=state_field, text='position', command=state_position)
+check_fitting = tk.Button(master=state_field, text='fitting', command=state_fitting)
 check_count.grid(row=0, column=0)
 check_efficient.grid(row=0, column=1)
-check_position.grid(row=0, column=2)
+check_fitting.grid(row=0, column=2)
 
-display = tk.Label(master=widget_frame, height=1, width=wgt_width, text='', borderwidth=5, relief='ridge')
+# information
+inform_frame = tk.Frame(master=widget_frame, width=wgt_width, borderwidth=5, relief='ridge')
+inform_frame.pack(fill=tk.BOTH)
+tk.Label(master=inform_frame, text="[ Inform ]").pack()
+
+display = tk.Label(master=inform_frame, height=1, width=wgt_width, text='')
 display.pack(side=tk.TOP, fill=tk.BOTH)
 
-description = tk.Label(master=widget_frame, height=5, width=wgt_width, text='')
+description = tk.Label(master=inform_frame, height=5, width=wgt_width, text='')
 description.pack(side=tk.TOP, fill=tk.BOTH)
 
-exit_button = tk.Button(master=widget_frame, text="EXIT", command=exitClick)
-exit_button.pack(side=tk.TOP, fill=tk.BOTH)
+# delete
+tk.Button(master=widget_frame, text='Delete').pack(fill=tk.BOTH)
 
+# exit
+tk.Button(master=widget_frame, text="EXIT", command=exitClick).pack(side=tk.TOP, fill=tk.BOTH)
+
+# figure
 canvas = FigureCanvasTkAgg(figure=fig, master=figure_frame)
+canvas.get_tk_widget().pack()
 
+# main function
 g_selection = str(int(tags.loc[0]['datetime']))
 make_figure(get_selection=g_selection)
 
+# maintain window
 window.mainloop()
