@@ -17,7 +17,7 @@ g_selection = 0
 def v_line(x, a, b, c, d, h):
     output_list = []
     for pos in x:
-        output_list.append(min(a*pos + b, abs(c*pos + d) + h))
+        output_list.append(min(a + b, abs(c*pos + d) + h))
     return output_list
 
 

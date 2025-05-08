@@ -6,10 +6,10 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 from tqdm import tqdm
 from datetime import datetime
 
-start_point = 0.021700
-end_point = 0.023400
-data_num = 45
-binwidth = 1500.0
+start_point = 0.021550
+end_point = 0.023550
+data_num = 35
+binwidth = 100.0
 n_value = 2
 select=False
 
@@ -41,7 +41,8 @@ counter = Counter(
     binwidth=binwidth * 1e9,
     n_values=n_value,
 )
-tagger.setInputDelay(channel=1, delay=111)
+tagger.setInputDelay(channel=1, delay=0)
+tagger.setInputDelay(channel=2, delay=24)
 
 selection = '11111111'
 
