@@ -31,7 +31,8 @@ def onSelect(event):
     if _selection:
         global g_selection
         index = _selection[0]
-        g_selection = str(listbox.get(index))
+        print(index)
+        g_selection = index
         description.config(text=
                            f""
                            f"< description >------------------------\n"
@@ -40,6 +41,13 @@ def onSelect(event):
                            f"|                                                  |\n"
                            f"-----------------------------------------")
         make_figure(get_selection=g_selection)
+
+
+def deleteClick():
+    tags.drop(index=g_selection, inplace=True)
+    tags.reset_index()
+    listbox.delete(g_selection)
+    window.update()
 
 
 def exitClick():
@@ -79,7 +87,7 @@ def make_figure(get_selection):
     t_position.cla()
     t_position.axis('off')
 
-    tag = get_selection
+    tag = str(int(tags.loc[get_selection]['datetime']))
 
     measurement = pd.read_csv(filepath_or_buffer="./measurement_"+tag+".csv", sep=',', index_col=0)
     coin_effi_line = pd.DataFrame(
@@ -224,7 +232,7 @@ description = tk.Label(master=inform_frame, height=5, width=wgt_width, text='')
 description.pack(side=tk.TOP, fill=tk.BOTH)
 
 # delete
-tk.Button(master=widget_frame, text='Delete').pack(fill=tk.BOTH)
+tk.Button(master=widget_frame, text='Delete', command=deleteClick).pack(fill=tk.BOTH)
 
 # exit
 tk.Button(master=widget_frame, text="EXIT", command=exitClick).pack(side=tk.TOP, fill=tk.BOTH)
@@ -234,7 +242,7 @@ canvas = FigureCanvasTkAgg(figure=fig, master=figure_frame)
 canvas.get_tk_widget().pack()
 
 # main function
-g_selection = str(int(tags.loc[0]['datetime']))
+g_selection = 0
 make_figure(get_selection=g_selection)
 
 # maintain window
