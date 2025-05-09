@@ -5,6 +5,7 @@ import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from scipy.optimize import curve_fit
 import matplotlib
+import os
 matplotlib.use('TkAgg')
 
 # Global valiables
@@ -29,23 +30,20 @@ def executeClick():
 def onSelect(event):
     _selection = listbox.curselection()
     if _selection:
-        global g_selection
+        global g_selection, tags
         index = _selection[0]
-        print(index)
         g_selection = index
-        description.config(text=
-                           f""
-                           f"< description >------------------------\n"
-                           f"|                                                  |\n"
-                           f"|                     {str(tags.loc[index]["description"])}                     |\n"
-                           f"|                                                  |\n"
-                           f"-----------------------------------------")
+        description.config(text=str(tags.loc[index]["description"]))
         make_figure(get_selection=g_selection)
 
 
 def deleteClick():
+    global tags
+    os.remove("./measurement_"+str(int(tags.loc[g_selection]['datetime']))+".csv")
+    os.remove("./position_log_"+str(int(tags.loc[g_selection]['datetime']))+".csv")
     tags.drop(index=g_selection, inplace=True)
-    tags.reset_index()
+    tags.reset_index(drop=True, inplace=True)
+    tags.to_csv(path_or_buf="./datetime.csv")
     listbox.delete(g_selection)
     window.update()
 
