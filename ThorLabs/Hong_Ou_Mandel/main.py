@@ -39,11 +39,11 @@ def onSelect(event):
 
 def deleteClick():
     global tags
-    os.remove("./measurement_"+str(int(tags.loc[g_selection]['datetime']))+".csv")
-    os.remove("./position_log_"+str(int(tags.loc[g_selection]['datetime']))+".csv")
+    os.remove("./data/measurement_"+str(int(tags.loc[g_selection]['datetime']))+".csv")
+    os.remove("./data/position_log_"+str(int(tags.loc[g_selection]['datetime']))+".csv")
     tags.drop(index=g_selection, inplace=True)
     tags.reset_index(drop=True, inplace=True)
-    tags.to_csv(path_or_buf="./datetime.csv")
+    tags.to_csv(path_or_buf="./data/datetime.csv")
     listbox.delete(g_selection)
     window.update()
 
@@ -87,7 +87,7 @@ def make_figure(get_selection):
 
     tag = str(int(tags.loc[get_selection]['datetime']))
 
-    measurement = pd.read_csv(filepath_or_buffer="./measurement_"+tag+".csv", sep=',', index_col=0)
+    measurement = pd.read_csv(filepath_or_buffer="./data/measurement_"+tag+".csv", sep=',', index_col=0)
     coin_effi_line = pd.DataFrame(
         data={'position':measurement['position'],
               'efficient':100*measurement['coincidence counts'].div(np.sqrt(measurement['A channel counts'].mul(measurement['B channel counts'])))
@@ -151,7 +151,7 @@ height = 600
 fig_width = 600
 wgt_width = width - fig_width
 
-tags = pd.read_csv(filepath_or_buffer="./datetime.csv", sep=',', index_col=0)
+tags = pd.read_csv(filepath_or_buffer="./data/datetime.csv", sep=',', index_col=0)
 
 window = tk.Tk()
 window.geometry("%dx%d"%(width, height))
