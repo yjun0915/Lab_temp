@@ -12,29 +12,30 @@ class Experiment:
     def __init__(self, inputs, desc):
         self.start_point = inputs[0]
         self.end_point = inputs[1]
-        self.data_num = inputs[2]
+        self.data_num = int(inputs[2])
         self.binwidth = inputs[3]
-        self.n_value = inputs[4]
+        self.n_value = int(inputs[4])
         self.delay = [inputs[5], inputs[6]]
         self.desc = desc
 
+        print(inputs)
+
         # device connecting
         device_list = Thorlabs.list_kinesis_devices()
-        tagger = createTimeTagger(resolution=Resolution_Standard)
+        self.tagger = createTimeTagger(resolution=Resolution_Standard)
         coincidences = Coincidences(
-            tagger=tagger,
+            tagger=self.tagger,
             coincidenceGroups=[[1, 2]],
             coincidenceWindow=1000,
         )
         self.counter = Counter(
-            tagger=tagger,
+            tagger=self.tagger,
             channels= [1, 2] + list(coincidences.getChannels()),
             binwidth=self.binwidth * 1e9,
             n_values=self.n_value,
         )
-        tagger.setInputDelay(channel=1, delay=self.delay[0])
-        tagger.setInputDelay(channel=2, delay=self.delay[1])
-        self.tagger = tagger
+        self.tagger.setInputDelay(channel=1, delay=self.delay[0])
+        self.tagger.setInputDelay(channel=2, delay=self.delay[1])
 
         if select:
             selection = device_list[int(input(device_list) or 0)][0]
@@ -90,7 +91,7 @@ class Experiment:
 
         tag = datetime.today().strftime("%Y%m%d%H%M")
         tags = pd.read_csv(filepath_or_buffer="./data/datetime.csv", sep=',', index_col=0)
-        tags = pd.concat(objs=[tags, pd.DataFrame(data={'datetime':[tag], 'description':[tags['description'], self.desc]})], ignore_index=True)
+        tags = pd.concat(objs=[tags, pd.DataFrame(data={'datetime':[tag], 'description':[self.desc]})], ignore_index=True)
         tags.to_csv(path_or_buf="./data/datetime.csv")
 
         result.to_csv(path_or_buf=("./data/measurement_"+tag+".csv"))

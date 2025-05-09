@@ -12,8 +12,8 @@ matplotlib.use('TkAgg')
 # initial value
 _start_point = 0.021550
 _end_point = 0.023550
-_data_num = 75
-_binwidth = 3000.0
+_data_num = 35
+_binwidth = 100.0
 _n_value = 2
 _delay = [0, 24]
 
@@ -33,9 +33,9 @@ def v_line(x, a, b, c, d, h):
 
 def executeClick():
     global start_point, end_point, data_num, binwidth, n_value, description_write
-    inputs = np.asarray([start_point.get(), end_point.get(), data_num.get(), binwidth.get(), n_value.get(), Adelay.get, Bdelay.get()], dtype=float)
+    inputs = np.asarray(a=[start_point.get(), end_point.get(), data_num.get(), binwidth.get(), n_value.get(), Adelay.get(), Bdelay.get()], dtype=float)
     desc = description_write.get()
-    exp = execution(inputs, desc)
+    exp = execution.Experiment(inputs, desc)
     exp.execute()
 
 
