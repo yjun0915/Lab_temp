@@ -6,16 +6,18 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 from tqdm import tqdm
 from datetime import datetime
 
-start_point = 0.021550
-end_point = 0.023550
-data_num = 75
-binwidth = 3000.0
-n_value = 2
-delay = [0, 24]
 select=False
 
 class Experiment:
-    def __init__(self):
+    def __init__(self, inputs, desc):
+        self.start_point = inputs[0]
+        self.end_point = inputs[1]
+        self.data_num = inputs[2]
+        self.binwidth = inputs[3]
+        self.n_value = inputs[4]
+        self.delay = [inputs[5], inputs[6]]
+        self.desc = desc
+
         # device connecting
         device_list = Thorlabs.list_kinesis_devices()
         tagger = createTimeTagger(resolution=Resolution_Standard)
@@ -27,11 +29,11 @@ class Experiment:
         self.counter = Counter(
             tagger=tagger,
             channels= [1, 2] + list(coincidences.getChannels()),
-            binwidth=binwidth * 1e9,
-            n_values=n_value,
+            binwidth=self.binwidth * 1e9,
+            n_values=self.n_value,
         )
-        tagger.setInputDelay(channel=1, delay=delay[0])
-        tagger.setInputDelay(channel=2, delay=delay[1])
+        tagger.setInputDelay(channel=1, delay=self.delay[0])
+        tagger.setInputDelay(channel=2, delay=self.delay[1])
         self.tagger = tagger
 
         if select:
@@ -43,7 +45,7 @@ class Experiment:
 
         # device initializing
         self.counter.start()
-        self.move_kinesis(sub_stage=self.stage, pos = start_point)
+        self.move_kinesis(sub_stage=self.stage, pos = self.start_point)
 
 
     def checkstr(self, arr, keys):
@@ -63,7 +65,7 @@ class Experiment:
 
 
     def execute(self):
-        steps = np.linspace(start=start_point, stop=end_point, num=data_num, endpoint=True)
+        steps = np.linspace(start=self.start_point, stop=self.end_point, num=self.data_num, endpoint=True)
 
         position_tracking = [self.stage.get_position(channel=1, scale=True)]
         A_channel_counts = []
@@ -76,7 +78,7 @@ class Experiment:
             A_channel_counts.append(np.sum(a=count_data, axis=1)[0])
             B_channel_counts.append(np.sum(a=count_data, axis=1)[1])
             coincidence_data.append(np.sum(a=count_data, axis=1)[2])
-            time.sleep(binwidth*n_value*1e-3)
+            time.sleep(self.binwidth*self.n_value*1e-3)
 
         result = pd.DataFrame(
             data={'position':(steps-np.average(steps)),
@@ -88,7 +90,7 @@ class Experiment:
 
         tag = datetime.today().strftime("%Y%m%d%H%M")
         tags = pd.read_csv(filepath_or_buffer="./data/datetime.csv", sep=',', index_col=0)
-        tags = pd.concat(objs=[tags, pd.DataFrame(data={'datetime':[tag]})], ignore_index=True)
+        tags = pd.concat(objs=[tags, pd.DataFrame(data={'datetime':[tag], 'description':[tags['description'], self.desc]})], ignore_index=True)
         tags.to_csv(path_or_buf="./data/datetime.csv")
 
         result.to_csv(path_or_buf=("./data/measurement_"+tag+".csv"))

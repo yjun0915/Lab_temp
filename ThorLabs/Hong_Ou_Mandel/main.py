@@ -1,12 +1,21 @@
+import matplotlib
+import os
+import execution
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from scipy.optimize import curve_fit
-import matplotlib
-import os
 matplotlib.use('TkAgg')
+
+# initial value
+_start_point = 0.021550
+_end_point = 0.023550
+_data_num = 75
+_binwidth = 3000.0
+_n_value = 2
+_delay = [0, 24]
 
 # Global valiables
 fig, ax = plt.subplots()
@@ -24,7 +33,10 @@ def v_line(x, a, b, c, d, h):
 
 def executeClick():
     global start_point, end_point, data_num, binwidth, n_value, description_write
-    print([start_point.get(), end_point.get(), data_num.get(), binwidth.get(), n_value.get(), description_write.get()])
+    inputs = np.asarray([start_point.get(), end_point.get(), data_num.get(), binwidth.get(), n_value.get(), Adelay.get, Bdelay.get()], dtype=float)
+    desc = description_write.get()
+    exp = execution(inputs, desc)
+    exp.execute()
 
 
 def onSelect(event):
@@ -167,26 +179,40 @@ experiment_frame = tk.Frame(master=widget_frame, width=wgt_width, borderwidth=5,
 experiment_frame.pack(fill=tk.BOTH)
 tk.Label(master=experiment_frame, text='[ Experiment execution ]').pack()
 
-inputs = tk.Frame(master=experiment_frame)
-inputs.pack()
-tk.Label(master=inputs, text='Start position').grid(row=0, column=0)
-start_point = tk.Entry(master=inputs)
+input_frame = tk.Frame(master=experiment_frame)
+input_frame.pack()
+tk.Label(master=input_frame, text='Start position').grid(row=0, column=0)
+start_point = tk.Entry(master=input_frame)
 start_point.grid(row=0, column=1)
-tk.Label(master=inputs, text='End position').grid(row=1, column=0)
-end_point = tk.Entry(master=inputs)
+start_point.insert(index=0, string=str(_start_point))
+tk.Label(master=input_frame, text='End position').grid(row=1, column=0)
+end_point = tk.Entry(master=input_frame)
 end_point.grid(row=1, column=1)
-tk.Label(master=inputs, text='Number of data').grid(row=2, column=0)
-data_num = tk.Entry(master=inputs)
+end_point.insert(index=0, string=str(_end_point))
+tk.Label(master=input_frame, text='Number of data').grid(row=2, column=0)
+data_num = tk.Entry(master=input_frame)
 data_num.grid(row=2, column=1)
-tk.Label(master=inputs, text='Bin width').grid(row=3, column=0)
-binwidth = tk.Entry(master=inputs)
+data_num.insert(index=0, string=str(_data_num))
+tk.Label(master=input_frame, text='Bin width').grid(row=3, column=0)
+binwidth = tk.Entry(master=input_frame)
 binwidth.grid(row=3, column=1)
-tk.Label(master=inputs, text='Number of n').grid(row=4, column=0)
-n_value = tk.Entry(master=inputs)
+binwidth.insert(index=0, string=str(_binwidth))
+tk.Label(master=input_frame, text='Number of n').grid(row=4, column=0)
+n_value = tk.Entry(master=input_frame)
 n_value.grid(row=4, column=1)
-tk.Label(master=inputs, text='Description').grid(row=5, column=0)
-description_write = tk.Entry(master=inputs)
-description_write.grid(row=5, column=1)
+n_value.insert(index=0, string=str(_n_value))
+tk.Label(master=input_frame, text='Delay A').grid(row=5, column=0)
+Adelay = tk.Entry(master=input_frame)
+Adelay.grid(row=5, column=1)
+Adelay.insert(index=0, string=str(_delay[0]))
+tk.Label(master=input_frame, text='Delay B').grid(row=6, column=0)
+Bdelay = tk.Entry(master=input_frame)
+Bdelay.grid(row=6, column=1)
+Bdelay.insert(index=0, string=str(_delay[1]))
+
+tk.Label(master=input_frame, text='Description').grid(row=7, column=0)
+description_write = tk.Entry(master=input_frame)
+description_write.grid(row=7, column=1)
 
 tk.Button(master=experiment_frame, text='Execute', command=executeClick).pack()
 
@@ -226,7 +252,7 @@ tk.Label(master=inform_frame, text="[ Inform ]").pack()
 display = tk.Label(master=inform_frame, height=1, width=wgt_width, text='')
 display.pack(side=tk.TOP, fill=tk.BOTH)
 
-description = tk.Label(master=inform_frame, height=5, width=wgt_width, text='')
+description = tk.Label(master=inform_frame, height=3, width=wgt_width, text='')
 description.pack(side=tk.TOP, fill=tk.BOTH)
 
 # delete
