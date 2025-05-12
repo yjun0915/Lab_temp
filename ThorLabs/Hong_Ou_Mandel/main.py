@@ -147,8 +147,6 @@ def make_figure(get_selection):
 
     min_idx = fitting['y'].idxmin()
 
-    # acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*1000*1e-12
-
     visibility = 1 - (fitting['y'][min_idx])/(coeff[1] + coeff[0]*fitting['x'][min_idx])
 
     display.config(text="Visibility of this data is %.2f"%(visibility*100)+"%")
