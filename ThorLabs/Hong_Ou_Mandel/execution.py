@@ -1,4 +1,4 @@
-import time
+import asyncio
 import numpy as np
 import pandas as pd
 from pylablib.devices import Thorlabs
@@ -18,19 +18,17 @@ class Experiment:
         self.delay = [inputs[5], inputs[6]]
         self.desc = desc
 
-        print(inputs)
-
         # device connecting
         device_list = Thorlabs.list_kinesis_devices()
         self.tagger = createTimeTagger(resolution=Resolution_Standard)
-        coincidences = Coincidences(
+        self.coincidences = Coincidences(
             tagger=self.tagger,
             coincidenceGroups=[[1, 2]],
             coincidenceWindow=1000,
         )
         self.counter = Counter(
             tagger=self.tagger,
-            channels= [1, 2] + list(coincidences.getChannels()),
+            channels= [1, 2, list(self.coincidences.getChannels())[0]],
             binwidth=self.binwidth * 1e9,
             n_values=self.n_value,
         )
@@ -49,6 +47,11 @@ class Experiment:
         self.move_kinesis(sub_stage=self.stage, pos = self.start_point)
 
 
+    def __del__(self):
+        self.stage.close()
+        freeTimeTagger(tagger=self.tagger)
+
+
     def checkstr(self, arr, keys):
         val = False
         for item in arr:
@@ -65,7 +68,7 @@ class Experiment:
                 log.append(sub_stage.get_position(channel=1, scale=True))
 
 
-    def execute(self):
+    async def execute(self):
         steps = np.linspace(start=self.start_point, stop=self.end_point, num=self.data_num, endpoint=True)
 
         position_tracking = [self.stage.get_position(channel=1, scale=True)]
@@ -79,7 +82,8 @@ class Experiment:
             A_channel_counts.append(np.sum(a=count_data, axis=1)[0])
             B_channel_counts.append(np.sum(a=count_data, axis=1)[1])
             coincidence_data.append(np.sum(a=count_data, axis=1)[2])
-            time.sleep(self.binwidth*self.n_value*1e-3)
+            await asyncio.sleep(self.binwidth*self.n_value*1e-3)
+            coincidence_data[-1] -= A_channel_counts[-1]*B_channel_counts[-1]*1000*1e-12
 
         result = pd.DataFrame(
             data={'position':(steps-np.average(steps)),
@@ -98,6 +102,3 @@ class Experiment:
         position_log.to_csv(path_or_buf=("./data/position_log_"+tag+".csv"))
 
         self.stage.blink(channel=1)
-
-        self.stage.close()
-        freeTimeTagger(tagger=self.tagger)

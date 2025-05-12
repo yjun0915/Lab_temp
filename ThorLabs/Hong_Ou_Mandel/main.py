@@ -1,3 +1,5 @@
+import asyncio
+import threading
 import matplotlib
 import os
 import execution
@@ -31,12 +33,28 @@ def v_line(x, a, b, c, d, h):
     return output_list
 
 
-def executeClick():
-    global start_point, end_point, data_num, binwidth, n_value, description_write
-    inputs = np.asarray(a=[start_point.get(), end_point.get(), data_num.get(), binwidth.get(), n_value.get(), Adelay.get(), Bdelay.get()], dtype=float)
+async def executeClick():
+    global tags, start_point, end_point, data_num, binwidth, n_value, description_write
+    inputs = np.asarray([
+        float(start_point.get()),
+        float(end_point.get()),
+        float(data_num.get()),
+        float(binwidth.get()),
+        float(n_value.get()),
+        float(Adelay.get()),
+        float(Bdelay.get())
+    ])
     desc = description_write.get()
     exp = execution.Experiment(inputs, desc)
-    exp.execute()
+    await exp.execute()
+    listbox.insert(tk.END, pd.read_csv("./data/datetime.csv")["datetime"].iloc[-1])
+    tags = pd.read_csv(filepath_or_buffer="./data/datetime.csv", sep=',', index_col=0)
+    make_figure(get_selection=-1)
+    del exp
+
+
+def handle_execute_click():
+    threading.Thread(target=lambda: asyncio.run(executeClick())).start()
 
 
 def onSelect(event):
@@ -97,7 +115,7 @@ def make_figure(get_selection):
     t_position.cla()
     t_position.axis('off')
 
-    tag = str(int(tags.loc[get_selection]['datetime']))
+    tag = str(int(tags['datetime'].iloc[get_selection]))
 
     measurement = pd.read_csv(filepath_or_buffer="./data/measurement_"+tag+".csv", sep=',', index_col=0)
     coin_effi_line = pd.DataFrame(
@@ -116,29 +134,24 @@ def make_figure(get_selection):
             np.concatenate([measurement['position'][int(measurement['position'].shape[0] / 2):0:-int(
                 measurement['position'].shape[0] / 5)], measurement['position'][
                                                         int(measurement['position'].shape[0] / 2):-1:int(
-                                                            measurement['position'].shape[0] / 5)]], 0), 5)
+                                                            measurement['position'].shape[0] / 5)]], 0), 4)
 
     )
 
     p0 = [0, measurement['coincidence counts'].mean(), 1, 0, measurement['coincidence counts'].min()]
     coeff, var_matrix = curve_fit(f=v_line, xdata=measurement['position'], ydata=measurement['coincidence counts'], p0=p0)
+    coeff[0] = 0
 
-    fitting_position = [
-        measurement['position'][0],
-        (coeff[4] - coeff[1] - abs(coeff[3]))/(coeff[0] + abs(coeff[2])),
-        -abs(coeff[3])/abs(coeff[2]),
-        (coeff[4] - coeff[1] + abs(coeff[3]))/(coeff[0] - abs(coeff[2])),
-        measurement['position'].iloc[-1]
-    ]
+    fitting_position = np.linspace(start=measurement['position'].min(), stop=measurement['position'].max(), num=1000)
     fitting = pd.DataFrame(data={'x':fitting_position, 'y':v_line(fitting_position, coeff[0], coeff[1], coeff[2], coeff[3], coeff[4])})
 
-    min_idx = measurement['coincidence counts'].idxmin()
+    min_idx = fitting['y'].idxmin()
 
-    acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*10*1e-12
+    # acc = measurement['A channel counts'][min_idx]*measurement['B channel counts'][min_idx]*1000*1e-12
 
-    fit_visibility = 1 - (fitting['y'][2]-acc)/(coeff[1] + coeff[0]*fitting_position[2]-acc)
+    visibility = 1 - (fitting['y'][min_idx])/(coeff[1] + coeff[0]*fitting['x'][min_idx])
 
-    display.config(text="Visibility of this data is %.2f"%(fit_visibility*100)+"%")
+    display.config(text="Visibility of this data is %.2f"%(visibility*100)+"%")
 
     if s_efficient:
         coin_effi_line.plot(kind='scatter', x='position', y='efficient', ax=t_efficient)
@@ -214,7 +227,8 @@ tk.Label(master=input_frame, text='Description').grid(row=7, column=0)
 description_write = tk.Entry(master=input_frame)
 description_write.grid(row=7, column=1)
 
-tk.Button(master=experiment_frame, text='Execute', command=executeClick).pack()
+tk.Button(master=experiment_frame, text='Execute', command=handle_execute_click).pack()
+
 
 # data selection
 dataselection_frame = tk.Frame(master=widget_frame, width=wgt_width, borderwidth=5, relief='ridge')
