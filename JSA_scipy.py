@@ -1,20 +1,23 @@
 import sympy
-from sympy.physics.units import speed_of_light as c
-from sympy.physics.units import meter, second
+from sympy import diff
+from sympy import pi
+from sympy.physics.units import speed_of_light
+from sympy.physics.units import nanometer, micrometer, millimeter, meter, second
 from sympy.physics.units import convert_to
 sympy.init_printing()
 
-pump = sympy.symbols(names='pump', real=True)
+pump = 405.4358                                     # nanometer
 signal = sympy.symbols(names='signal', real=True)
 idler = sympy.symbols(names='idler', real=True)
-temp = sympy.symbols(names='temp', real=True)
-length = sympy.symbols(names='L', real=True)
-period = sympy.symbols(names='Λ', real=True)
+temp = 109.88                                       # degrees celsius
+length = 10e6                                       # millimeter
+period = 9.825e3                                    # micrometer
 
 joint_spectral_amplitude = sympy.Function(name='A')(signal, idler, temp)
 pump_spectrum = sympy.Function(name='α')(signal, idler)
 phase_matching = sympy.Function(name='Φ')(length, signal, idler, temp)
 wavevector_mismatch = sympy.Function(name='Δk')(signal, idler, temp)
+
 
 class GeneralFunction(sympy.Function):
     @classmethod
@@ -33,20 +36,23 @@ class GeneralFunction(sympy.Function):
         λ2 = wavelength_um**2
         n_squared = A + B / (λ2 - C)
         return n_squared**0.5
+
     @classmethod
     def wavevector(cls, w, t):
-        return GeneralFunction.refractive_index(w, t)*t/convert_to(expr=c, target_units=[meter, second])
+        return GeneralFunction.refractive_index(w, t)*t/299792485e9
+
+
+k_p = GeneralFunction.wavevector(w=pump, t=temp)
+k_s = GeneralFunction.wavevector(w=signal, t=temp)
+k_i = GeneralFunction.wavevector(w=idler, t=temp)
 
 if __name__ == '__main__':
-    global pump, signal, idler, temp, length, period
-    global joint_spectral_amplitude, pump_spectrum, phase_matching, wavevector_mismatch
+    pump_spectrum = sympy.exp()
 
     wavevector = GeneralFunction.wavevector
-
     wavevector_mismatch = (
-        wavevector(pump, temp) - wavevector(pump/2, temp)
-        - wavevector(pump/2, temp)
+        k_p - k_s
+        - k_i + (2*pi/period)
     )
     phase_matching = sympy.sinc(wavevector_mismatch*length/2)
-
-    sympy.pprint(wavevector_mismatch)
+    sympy.plotting.plot3d(phase_matching, (signal, 0, 9200), (idler, 0, 9200),  title='$%s$' % sympy.latex(phase_matching))
