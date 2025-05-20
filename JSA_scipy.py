@@ -13,6 +13,8 @@ temp = 109.88                                       # degrees celsius
 length = 10e6                                       # millimeter
 period = 9.825e3                                    # micrometer
 
+length = length*(1 + 6.7e-6*(temp-25) + 11e-9*(temp-25)**2)     # thermal expansion
+
 joint_spectral_amplitude = sympy.Function(name='A')(signal, idler, temp)
 pump_spectrum = sympy.Function(name='α')(signal, idler)
 phase_matching = sympy.Function(name='Φ')(length, signal, idler, temp)
@@ -47,7 +49,7 @@ k_s = GeneralFunction.wavevector(w=signal, t=temp)
 k_i = GeneralFunction.wavevector(w=idler, t=temp)
 
 if __name__ == '__main__':
-    pump_spectrum = sympy.exp()
+    pump_spectrum = sympy.exp(1)
 
     wavevector = GeneralFunction.wavevector
     wavevector_mismatch = (
@@ -55,4 +57,4 @@ if __name__ == '__main__':
         - k_i + (2*pi/period)
     )
     phase_matching = sympy.sinc(wavevector_mismatch*length/2)
-    sympy.plotting.plot3d(phase_matching, (signal, 0, 9200), (idler, 0, 9200),  title='$%s$' % sympy.latex(phase_matching))
+    sympy.plotting.plot3d(phase_matching, (signal, 2*pi*299792485e9/700, 2*pi*299792485e9/920), (idler, 2*pi*299792485e9/700, 2*pi*299792485e9/920))
