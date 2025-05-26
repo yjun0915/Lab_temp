@@ -17,7 +17,7 @@ _end_point = 0.0208
 _data_num = 97
 _binwidth = 1500.0
 _n_value = 2
-_delay = [50, 0]
+_delay = [0, 15]
 
 # Global valiables
 fig, ax = plt.subplots()
