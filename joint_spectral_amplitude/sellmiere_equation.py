@@ -29,6 +29,7 @@ a[1][1][:] = [a0, a1, a2, a3]   # y-axis n2
 def excute(ax, lambda_sym, T_sym):
     expr_z = n_i(a[0][0][0], lambda_sym)*(T_sym - 25) + n_i(a[0][1][0], lambda_sym)*((T_sym - 25)**2)
     expr_y = n_i(a[1][0][0], lambda_sym)*(T_sym - 25) + n_i(a[1][1][0], lambda_sym)*((T_sym - 25)**2)
+    print(latex(expr_z))
     ax.text(x=0, y=0.5, s=f"${latex(expr_z)}$")
     return expr_z, expr_y
 

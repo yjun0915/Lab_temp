@@ -9,7 +9,7 @@ def v_line(x, a, b, c, d, h):
         output_list.append(min(a*pos + b, abs(c*pos + d) + h))
     return output_list
 
-measurement = pd.read_csv(filepath_or_buffer="./data/measurement_202505251639.csv", sep=',', index_col=0)
+measurement = pd.read_csv(filepath_or_buffer="./data/measurement_202505261833.csv", sep=',', index_col=0)
 
 fig, ax = plt.subplots()
 ax.set_xlim(xmin=measurement['position'].min(), xmax=measurement['position'].max())
@@ -39,11 +39,11 @@ min_idx = fitting['y'].idxmin()
 visibility = 1 - (fitting['y'][min_idx])/(coeff[1] + coeff[0]*fitting['x'][min_idx])
 print(visibility)
 
-measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5)
+measurement.plot(kind='scatter', x='position', y='coincidence counts', ax=ax, s=5, color='black')
 fitting.plot(kind='line', x='x', y='y', ax=ax, color='r', legend=False)
 
 ax.axis('on')
-ax.set_ylabel("coincidence counts")
+ax.set_ylabel("coincidence counts (1 sec)")
 ax.set_xlabel("position (mm)")
 ax.set_ylim(ymin=0)
 
