@@ -12,8 +12,8 @@ from scipy.optimize import curve_fit
 matplotlib.use('TkAgg')
 
 # initial value
-_start_point = 0.01895
-_end_point = 0.02085
+_start_point = 0.01899
+_end_point = 0.02089
 _data_num = 55
 _binwidth = 500.0
 _n_value = 2

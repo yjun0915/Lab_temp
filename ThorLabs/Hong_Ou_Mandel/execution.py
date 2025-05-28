@@ -17,6 +17,7 @@ class Experiment:
         self.n_value = int(inputs[4])
         self.delay = [inputs[5], inputs[6]]
         self.desc = desc
+        self.cw = 500
 
         # device connecting
         device_list = Thorlabs.list_kinesis_devices()
@@ -24,7 +25,7 @@ class Experiment:
         self.coincidences = Coincidences(
             tagger=self.tagger,
             coincidenceGroups=[[1, 2]],
-            coincidenceWindow=1000,
+            coincidenceWindow=self.cw,
         )
         self.counter = Counter(
             tagger=self.tagger,
@@ -83,7 +84,7 @@ class Experiment:
             B_channel_counts.append(np.sum(a=count_data, axis=1)[1])
             coincidence_data.append(np.sum(a=count_data, axis=1)[2])
             await asyncio.sleep(self.binwidth*self.n_value*1e-3)
-            coincidence_data[-1] -= A_channel_counts[-1]*B_channel_counts[-1]*1000*1e-12
+            coincidence_data[-1] -= A_channel_counts[-1]*B_channel_counts[-1]*self.cw*1e-12
 
         result = pd.DataFrame(
             data={'position':(steps-np.average(steps)),
