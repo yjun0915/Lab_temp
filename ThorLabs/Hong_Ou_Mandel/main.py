@@ -12,12 +12,12 @@ from scipy.optimize import curve_fit
 matplotlib.use('TkAgg')
 
 # initial value
-_start_point = 0.0189
-_end_point = 0.0208
-_data_num = 97
-_binwidth = 1500.0
+_start_point = 0.01895
+_end_point = 0.02085
+_data_num = 55
+_binwidth = 500.0
 _n_value = 2
-_delay = [0, 15]
+_delay = [26, 0]
 
 # Global valiables
 fig, ax = plt.subplots()
