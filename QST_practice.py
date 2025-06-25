@@ -12,6 +12,6 @@ df.index = ['H', 'V', 'D', 'A', 'R', 'L']
 
 df.to_csv(path_or_buf='./QST_example_2qubit.csv', sep=',')
 
-S = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',')
+S = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
 
 print(S)
