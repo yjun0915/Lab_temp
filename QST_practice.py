@@ -1,5 +1,7 @@
 import pandas as pd
 import numpy as np
+from matplotlib import cm
+from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 
 from itertools import product
@@ -45,10 +47,26 @@ output = np.zeros(shape=[4, 4], dtype = 'complex')
 
 for idx in range(basis.shape[0]):
     output += 0.5*S[basis[idx][0]][basis[idx][1]]*tm(operator[basis[idx][0]], operator[basis[idx][1]])
+result = np.real(output).ravel()
+print(result)
 
-print(np.real(output))
 
-plt.imshow(np.real(output))
-plt.colorbar()
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+_x = np.arange(4)
+_y = np.arange(4)
+_xx, _yy = np.meshgrid(_x, _y)
+x, y = _xx.ravel(), _yy.ravel()
+z = np.zeros_like(x)
+
+dx = dy = 0.8
+
+norm = Normalize(vmin=result.min(), vmax=result.max())
+cmap = cm.bwr
+colors = cmap(norm(result))
+
+ax.bar3d(x, y, z, dx, dy, result, color=colors, shade=True)
+ax.set_zlim(np.min(result), np.max(result))
 
 plt.show()
