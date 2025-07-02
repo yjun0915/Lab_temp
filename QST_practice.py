@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from itertools import product
 
+
 def tm(tensor1, tensor2):
     tensor1 = np.array(tensor1)
     tensor2 = np.array(tensor2)
@@ -20,28 +21,33 @@ def tm(tensor1, tensor2):
 
     return output
 
-S = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
-info = S.describe()
-
-normalizer = 1/(info.loc['mean']*6).sum()
-
-S = normalizer*S
-info = S.describe()
-# print(S['H']['H'])
-
 operator = {
-    'H': [[1, 0], [0, -1]],
-    'V': [[-1, 0], [0, 1]],
-    'D': [[0, 1], [1, 0]],
-    'A': [[0, -1], [-1, 0]],
-    'R': [[0, 1j], [-1j, 0]],
-    'L': [[0, -1j], [1j, 0]]
+    'H': np.array([[1, 0], [0, -1]]),
+    'V': np.array([[-1, 0], [0, 1]]),
+    'D': np.array([[0, 1], [1, 0]]),
+    'A': np.array([[0, -1], [-1, 0]]),
+    'R': np.array([[0, 1j], [-1j, 0]]),
+    'L': np.array([[0, -1j], [1j, 0]])
 }
 # print(tm(operator['H'], operator['D']))
+states = {
+    'H': np.array([[1, 0]]),
+    'V': np.array([[0, 1]]),
+    'D': np.array([[1/2, 1/2]]),
+    'A': np.array([[1/2, -1/2]]),
+    'R': np.array([[1/2, 1j/2]]),
+    'L': np.array([[1/2, -1j/2]])
+}
+# print(tm(states['H'], states['H']).ravel())
 
 parameters = ['H', 'V', 'D', 'A', 'R', 'L']
 basis = np.array(list(product(parameters, parameters)))
 # print(basis)
+
+
+S = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
+info = S.describe()
+# print(S['H']['H'])
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
@@ -66,7 +72,7 @@ norm = Normalize(vmin=result.min(), vmax=result.max())
 cmap = cm.bwr
 colors = cmap(norm(result))
 
-ax.bar3d(x, y, z, dx, dy, result, color=colors, shade=True)
+plot = ax.bar3d(x, y, z, dx, dy, result, color=colors, shade=True)
 ax.set_zlim(np.min(result), np.max(result))
 
 plt.show()
