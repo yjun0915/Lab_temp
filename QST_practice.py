@@ -45,14 +45,17 @@ basis = np.array(list(product(parameters, parameters)))
 # print(basis)
 
 
-S = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
-info = S.describe()
+T = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
+info = T.describe()
 # print(S['H']['H'])
+
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
 for idx in range(basis.shape[0]):
-    output += 0.5*S[basis[idx][0]][basis[idx][1]]*tm(operator[basis[idx][0]], operator[basis[idx][1]])
+    output += 0.5*T[basis[idx][0]][basis[idx][1]]*tm(operator[basis[idx][0]], operator[basis[idx][1]])
+
+
 result = np.real(output).ravel()
 print(result)
 
