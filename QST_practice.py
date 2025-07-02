@@ -49,11 +49,15 @@ T = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_co
 info = T.describe()
 # print(S['H']['H'])
 
+t = np.array([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])  # Estimate t-matrix using MLE
+
+print(T)
+S = np.linalg.inv(t)*T
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
 for idx in range(basis.shape[0]):
-    output += 0.5*T[basis[idx][0]][basis[idx][1]]*tm(operator[basis[idx][0]], operator[basis[idx][1]])
+    output += 0.5*S[basis[idx][0]][basis[idx][1]]*tm(operator[basis[idx][0]], operator[basis[idx][1]])
 
 
 result = np.real(output).ravel()
