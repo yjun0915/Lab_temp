@@ -6,19 +6,21 @@ df = pd.read_csv('temp&humi_inside_laserbox.csv', parse_dates=['Timestamp'])
 
 # 이중 y축
 fig, ax1 = plt.subplots(figsize=(10, 5))
+ax1.grid(which='both', linestyle='dashed')
+ax1.set_axisbelow(True)
 
 # 온도용 y축
 color = 'tab:red'
 ax1.set_xlabel('Time')
-ax1.set_ylabel('Temperature', color=color)
-ax1.plot(df['Timestamp'], df['Temperature'], color=color, label='Temp')
+ax1.set_ylabel('Temperature (℃)', color=color)
+ax1.plot(df['Timestamp'], df['Temperature'], color=color, label='Temp', zorder=1)
 ax1.tick_params(axis='y', labelcolor=color)
 
 # 습도용 y축
 ax2 = ax1.twinx()  # 오른쪽 y축
 color = 'tab:blue'
-ax2.set_ylabel('Humidity', color=color)
-ax2.plot(df['Timestamp'], df['Humidity'], color=color, label='Humidity')
+ax2.set_ylabel('Humidity (%)', color=color)
+ax2.plot(df['Timestamp'], df['Humidity'], color=color, label='Humidity', zorder=0)
 ax2.tick_params(axis='y', labelcolor=color)
 
 plt.title("Temperature and Humidity Over Time")
