@@ -1,13 +1,16 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from Cython.Shadow import typeof
 from matplotlib import cm
 from matplotlib.colors import Normalize
 from scipy.linalg import fractional_matrix_power
+from scipy.linalg import sqrtm
 from scipy.optimize import minimize
 
 from itertools import product
 
+from sympy.physics.quantum.density import fidelity
 
 operator = {
     'H': np.array([[1, 0], [0, -1]]),
@@ -55,7 +58,7 @@ def density_matrix(x):
         [x[6] + 1j * x[7], x[8] + 1j * x[9], x[2], 0],
         [x[10] + 1j * x[11], x[12] + 1j * x[13], x[14] + 1j * x[15], x[3]]
     ], dtype='complex')
-    return (r * r.H) / np.trace(r * r.H)
+    return (r * r.H) / np.trace(r * r.H) # eq. 68
 
 
 def obj_function(x, T):
@@ -66,32 +69,46 @@ def obj_function(x, T):
     return np.real(1/output)
 
 
-T = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
-info = T.describe()
+P = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
+info = P.describe()
 
-T = T/(T['H']['H']+T['H']['V']+T['V']['H']+T['V']['V'])
+P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 # print(S['H']['H'])
+
+
 
 MLE_Model = minimize(
     obj_function,
-    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-    args=T
+    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.25,
+    args=P
 )
-print(MLE_Model)
+# print(MLE_Model)
 
 t_mat = (density_matrix(MLE_Model.x))
-print(t_mat)
+
+S = P
+
+for base in basis:
+    S[base[0]][base[1]] =
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
 for idx in range(basis.shape[0]):
-    output += 0.5*T[basis[idx][0]][basis[idx][1]]*t_mat*tm(operator[basis[idx][0]], operator[basis[idx][1]])
+    output += 0.5*S[basis[idx][0]][basis[idx][1]] * t_mat * tm(operator[basis[idx][0]], operator[basis[idx][1]]) # 1/4 * T * (translation) * Pauli_string
 
+target = np.array([
+    [0.5, 0, 0, -0.5],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [-0.5, 0, 0, 0.5]
+])
+
+fidelity = np.trace(sqrtm(sqrtm(output).dot(target.dot(sqrtm(output)))))**2
+print("Fidelity: %f"%np.real(fidelity))
 
 result_real = np.real(output).ravel()
 result_imag = np.imag(output).ravel()
 # print(result_real)
-
 
 fig = plt.figure()
 
