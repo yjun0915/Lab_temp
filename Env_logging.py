@@ -8,7 +8,7 @@ from datetime import datetime
 ser = serial.Serial('COM14', 9600)
 time.sleep(2)  # 보드 초기화 대기
 
-with open('env_data.csv', 'w', newline='') as f:
+with open('temp&humi_inside_laserbox.csv', 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(['Timestamp', 'Temperature', 'Humidity'])
 
@@ -20,17 +20,19 @@ with open('env_data.csv', 'w', newline='') as f:
             line = ser.readline().decode().strip()
             if ',' in line:
                 temp, humi = line.split(',')
-                cache[0][counter] = temp
-                cache[1][counter] = humi
-                cache += 1
+                cache[0][counter] = float(temp)
+                cache[1][counter] = float(humi)
+                counter += 1
                 if counter == holder:
                     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                    ave_temp = np.sum(cache[0][:])/holder
-                    ave_humi = np.sum(cache[1][:])/holder
+                    ave_temp = np.mean(cache[0])
+                    ave_humi = np.mean(cache[1])
                     writer.writerow([timestamp, ave_temp, ave_humi])
                     cache = np.zeros(shape=[2, holder])
                     counter = 0
-                print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Temp: {temp}°C, Humidity: {humi}%")
+                    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Temp: {ave_temp}°C, Humidity: {ave_humi}% [saved]")
+                else:
+                    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | Temp: {temp}°C, Humidity: {humi}%")
     except KeyboardInterrupt: # 콘솔 좌상단 정지 버튼만 작동함
         print("데이터 저장 종료")
     finally:
