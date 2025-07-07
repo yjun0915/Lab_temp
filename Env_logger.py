@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # 데이터 불러오기
-df = pd.read_csv('temp&humi_inside_laserbox.csv', parse_dates=['Timestamp'])
+df = pd.read_csv('env_data.csv', parse_dates=['Timestamp'])
 
 # 이중 y축
 fig, ax1 = plt.subplots(figsize=(10, 5))
