@@ -61,11 +61,11 @@ def density_matrix(x):
     return (r * r.H) / np.trace(r * r.H) # eq. 68
 
 
-def obj_function(x, T):
+def obj_function(x, P):
     R = density_matrix(x)
     output = 1
     for base in basis:
-        output = output*fractional_matrix_power((tm(states[base[0]], states[base[1]]) * R * tm(states[base[0]], states[base[1]]).H)[0][0], T[base[0]][base[1]])
+        output = output*fractional_matrix_power((tm(states[base[0]], states[base[1]]) * R * tm(states[base[0]], states[base[1]]).H)[0][0], P[base[0]][base[1]])
     return np.real(1/output)
 
 
@@ -73,9 +73,9 @@ P = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_co
 info = P.describe()
 
 P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
-# print(S['H']['H'])
+# print(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 
-
+S00 =
 
 MLE_Model = minimize(
     obj_function,
@@ -88,8 +88,8 @@ t_mat = (density_matrix(MLE_Model.x))
 
 S = P
 
-for base in basis:
-    S[base[0]][base[1]] =
+# for base in basis:
+#     S[base[0]][base[1]] =
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
