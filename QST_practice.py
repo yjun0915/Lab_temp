@@ -13,12 +13,12 @@ from itertools import product
 from sympy.physics.quantum.density import fidelity
 
 operator = {
-    'H': np.array([[1, 0], [0, -1]]),
-    'V': np.array([[-1, 0], [0, 1]]),
-    'D': np.array([[0, 1], [1, 0]]),
-    'A': np.array([[0, -1], [-1, 0]]),
-    'R': np.array([[0, 1j], [-1j, 0]]),
-    'L': np.array([[0, -1j], [1j, 0]])
+    'H': np.array([[1, 0], [0, 0]]),
+    'V': np.array([[0, 0], [0, 1]]),
+    'D': np.array([[1/2, 1/2], [1/2, 1/2]]),
+    'A': np.array([[1/2, -1/2], [-1/2, 1/2]]),
+    'R': np.array([[1/2, -1j/2], [1j/2, 1/2]]),
+    'L': np.array([[1/2, 1j/2], [-1j/2, 1/2]])
 }
 # print(tm(operator['H'], operator['D']))
 states = {
@@ -75,26 +75,31 @@ info = P.describe()
 P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 # print(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 
-S00 =
+T = np.zeros(shape=(4, 4))
+stocks_index = [['H', 'V', 1, 1], ['D', 'A', 1, -1], ['R', 'L', 1, -1], ['H', 'V', 1, -1]]
 
-MLE_Model = minimize(
-    obj_function,
-    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.25,
-    args=P
-)
-# print(MLE_Model)
+for i in range(4):
+    for j in range(4):
+        for m in range(2):
+            for n in range(2):
+                parity = stocks_index[i][m+2] * stocks_index[j][n+2]
+                T[i][j] += parity * P[stocks_index[i][m]][stocks_index[j][n]]
 
-t_mat = (density_matrix(MLE_Model.x))
-
-S = P
-
-# for base in basis:
-#     S[base[0]][base[1]] =
+# MLE_Model = minimize(
+#     obj_function,
+#     x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.25,
+#     args=P
+# )
+# # print(MLE_Model)
+#
+# t_mat = (density_matrix(MLE_Model.x))
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
-for idx in range(basis.shape[0]):
-    output += 0.5*S[basis[idx][0]][basis[idx][1]] * t_mat * tm(operator[basis[idx][0]], operator[basis[idx][1]]) # 1/4 * T * (translation) * Pauli_string
+for i in range(4):
+    for j in range(4):
+        output += 0.25*T[i][j]*tm(operator[stocks_index[i][0]] + (stocks_index[i][3]*operator[stocks_index[i][1]]),
+                                 operator[stocks_index[j][0]] + (stocks_index[j][3]*operator[stocks_index[j][1]]))
 
 target = np.array([
     [0.5, 0, 0, -0.5],
