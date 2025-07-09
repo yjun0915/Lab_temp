@@ -102,10 +102,10 @@ for i in range(4):
                                  operator[stocks_index[j][0]] + (stocks_index[j][3]*operator[stocks_index[j][1]]))
 
 target = np.array([
-    [0.5, 0, 0, -0.5],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [-0.5, 0, 0, 0.5]
+    [0.25, 0.25, 0, 0],
+    [0.25, 0.25, 0, 0],
+    [0, 0, 0.25, 0.25],
+    [0, 0, 0.25, 0.25]
 ])
 
 fidelity = np.trace(sqrtm(sqrtm(output).dot(target.dot(sqrtm(output)))))**2
