@@ -83,7 +83,7 @@ for i in range(4):
         for m in range(2):
             for n in range(2):
                 parity = stocks_index[i][m+2] * stocks_index[j][n+2]
-                T[i][j] += parity * P[stocks_index[i][m]][stocks_index[j][n]]
+                T[i][j] += parity * P[stocks_index[i][m]][stocks_index[j][n]]   # eq. 39
 
 # MLE_Model = minimize(
 #     obj_function,
