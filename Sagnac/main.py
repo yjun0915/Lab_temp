@@ -2,14 +2,13 @@ from pylablib.devices import Thorlabs
 
 from actions import Function
 from home import FastAxis
+from qst import QST
 from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTagger, freeTimeTagger
 
 import pandas as pd
 
-import time
 
-
-binwidth, n_value, cw = 500.0, 1, 1000
+binwidth, n_value, cw = 100.0, 1, 1000
 delay = [0, 132]
 
 devices = Thorlabs.list_kinesis_devices()
@@ -43,5 +42,10 @@ func = Function(stages)
 go_fast_axis = FastAxis(stages, counter)
 
 if __name__ == "__main__":
-    data = go_fast_axis.excute([35, 36.1, 50, 10])
-    print(data)
+    # data = go_fast_axis.excute([35, 36.1, 50, 10])
+    # print(data)
+    # offset = data.x
+    qst = QST(stages, counter, [213.7, 222.6, 141.8, 203.0])
+    P = qst.measure()
+    print(P)
+    P.to_csv(path_or_buf="QST_data.csv", sep = ',')

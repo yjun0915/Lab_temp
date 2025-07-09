@@ -8,7 +8,7 @@ from datetime import datetime
 ser = serial.Serial('COM14', 9600)
 time.sleep(2)  # 보드 초기화 대기
 
-with open('evn_data.csv', 'w', newline='') as f:
+with open('env_data.csv', 'w', newline='') as f:
     writer = csv.writer(f)
 
     writer.writerow(['Timestamp', 'Temperature', 'Humidity'])

@@ -27,7 +27,7 @@ class FastAxis:
             A_channel_counts = np.sum(a=count_data, axis=1)[0]
             B_channel_counts = np.sum(a=count_data, axis=1)[1]
             coincidence_data = np.sum(a=count_data, axis=1)[2]
-            print("A: ", A_channel_counts, ", B: ", B_channel_counts, ", CC: ", coincidence_data)
+            #print("A: ", A_channel_counts, ", B: ", B_channel_counts, ", CC: ", coincidence_data)
             return -1 * (A_channel_counts * B_channel_counts)
         except Exception as e:
             print("[ERROR in obj_function]:", e)

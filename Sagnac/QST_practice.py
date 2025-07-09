@@ -68,10 +68,11 @@ def obj_function(x, P):
     return np.real(1/output)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_example_2qubit.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
 info = P.describe()
 
-P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
+if P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'] != 0:
+    P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 # print(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 
 T = np.zeros(shape=(4, 4))
