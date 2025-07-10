@@ -42,10 +42,10 @@ func = Function(stages)
 go_fast_axis = FastAxis(stages, counter)
 
 if __name__ == "__main__":
-    # data = go_fast_axis.excute([35, 36.1, 50, 10])
-    # print(data)
-    # offset = data.x
-    qst = QST(stages, counter, [213.7, 222.6, 96.8, 203.0])
-    P = qst.measure()
-    print(P)
-    P.to_csv(path_or_buf="QST_data.csv", sep = ',')
+    data = go_fast_axis.excute([217.2535, 218.0520, 143.0710, 208.9197])
+    print(data)
+    offset = data.x - [0, 0, 45, 0]
+    # qst = QST(stages, counter, [213.7, 222.6, 96.8, 203.0])
+    # P = qst.measure()
+    # print(P)
+    # P.to_csv(path_or_buf="QST_data.csv", sep = ',')
