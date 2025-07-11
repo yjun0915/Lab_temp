@@ -64,11 +64,12 @@ def obj_function(x, P):
     R = density_matrix(x)
     output = 1
     for base in basis:
-        output = output*matrix_power((tm(states[base[0]], states[base[1]]) * R * tm(states[base[0]], states[base[1]]).H)[0][0], P[base[0]][base[1]])
-    return np.real(-1*output)
+        _n = tm(states[base[0]], states[base[1]]).dot(R.dot(tm(states[base[0]], states[base[1]]).H))
+        output += ((_n - P[base[0]][base[1]])**2)/(2*_n)
+    return np.real(output)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_mockdata.csv', sep=',', index_col=0)
 info = P.describe()
 
 if P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'] == 0:
@@ -136,20 +137,23 @@ norm = Normalize(vmin=np.min([result_real, result_imag]), vmax=np.max([result_re
 cmap = cm.viridis
 
 ax = fig.add_subplot(1, 5, (1, 2), projection='3d')
-colors = cmap(norm(result_real))
+colors = cmap(norm(result_real.ravel()))
+colors = np.array(colors)[0]
+
 
 ax.bar3d(x, y, z, dx, dy, result_real, color=colors, shade=True)
 ax.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
 ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 
-ax2 = fig.add_subplot(1, 5, (3, 4), projection='3d')
-colors = cmap(norm(result_imag))
-
-ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
-ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
-ax2.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
-ax2.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+# ax2 = fig.add_subplot(1, 5, (3, 4), projection='3d')
+# colors = cmap(norm(result_imag.ravel()))
+# colors = np.array(colors)[0]
+#
+# ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
+# ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
+# ax2.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+# ax2.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 
 info = fig.add_subplot(155)
 info.text(y=1, x=0.2, s="Fidelity is %.4f"%fidelity)
