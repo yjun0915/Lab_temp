@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.colors import Normalize
-from scipy.linalg import fractional_matrix_power
+from numpy.linalg import matrix_power
 from scipy.linalg import sqrtm
 from scipy.optimize import minimize
 
@@ -64,14 +64,14 @@ def obj_function(x, P):
     R = density_matrix(x)
     output = 1
     for base in basis:
-        output = output*fractional_matrix_power((tm(states[base[0]], states[base[1]]) * R * tm(states[base[0]], states[base[1]]).H)[0][0], P[base[0]][base[1]])
-    return np.real(1/output)
+        output = output*matrix_power((tm(states[base[0]], states[base[1]]) * R * tm(states[base[0]], states[base[1]]).H)[0][0], P[base[0]][base[1]])
+    return np.real(-1*output)
 
 
 P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
 info = P.describe()
 
-if P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'] != 0:
+if P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'] == 0:
     P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 # print(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
 
@@ -85,14 +85,14 @@ for i in range(4):
                 parity = stocks_index[i][m+2] * stocks_index[j][n+2]
                 T[i][j] += parity * P[stocks_index[i][m]][stocks_index[j][n]]   # eq. 39
 
-# MLE_Model = minimize(
-#     obj_function,
-#     x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.25,
-#     args=P
-# )
-# # print(MLE_Model)
-#
-# t_mat = (density_matrix(MLE_Model.x))
+MLE_Model = minimize(
+    obj_function,
+    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.25,
+    args=P
+)
+print(MLE_Model)
+
+t_mat = (density_matrix(MLE_Model.x))
 
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
@@ -107,9 +107,11 @@ target = np.array([
     [0, 0.5, 0.5, 0],
     [0, 0, 0, 0]
 ])
+print(t_mat)
+output = t_mat
 
 fidelity = np.trace(sqrtm(sqrtm(output).dot(target.dot(sqrtm(output)))))**2
-purity = np.trace(output*output)
+purity = np.trace(output.dot(output))
 r, v = np.linalg.eig(output)
 r = sorted(r, reverse=True)
 concurrence = max(0, r[0] - r[1] - r[2] - r[3])
@@ -157,3 +159,13 @@ info.set_ylim([-0.5, 1.5])
 plt.axis('off')
 
 plt.show()
+
+
+
+
+
+'''
+Try idle
+'''
+
+
