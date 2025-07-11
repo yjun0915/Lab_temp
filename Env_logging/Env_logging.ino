@@ -18,7 +18,7 @@ void loop() {
     delay(200); // 디바운스
   }
 
-  if (current2 == LOW && lastButton2State == HIGH) {
+  if (current1 == HIGH && lastButton1State == LOW) {
     Serial.println("SET2");
     delay(200); // 디바운스
   }

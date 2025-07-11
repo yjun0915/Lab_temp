@@ -10,7 +10,7 @@ class FastAxis:
     def __init__(self, stages, detector):
         self.stages = stages
         self.detector = detector
-        self.order = ['H1', 'V1', 'H2', 'V2']
+        self.order = ['H1', 'Q1', 'H2', 'Q2']
         self.func = Function(stages)
         self.iteration = [0]
         self.debuger = [0]

@@ -11,7 +11,7 @@ class QST:
     def __init__(self, stages, detector, offset):
         self.stages = stages
         self.detector = detector
-        self.order = ['H1', 'V1', 'H2', 'V2']
+        self.order = ['H1', 'Q1', 'H2', 'Q2']
         parameters = ['H', 'V', 'D', 'A', 'R', 'L']
         self.basis = np.array(list(product(parameters, parameters)))
         self.a_angle = {

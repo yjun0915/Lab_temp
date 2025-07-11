@@ -16,9 +16,9 @@ print("[Devices]: ", devices)
 
 stages = pd.DataFrame(data={
     "H1":[Thorlabs.KinesisMotor(conn='83854766', scale='stage', default_channel=1)],
-    "V1":[Thorlabs.KinesisMotor(conn='83857392', scale='stage', default_channel=1)],
+    "Q1":[Thorlabs.KinesisMotor(conn='83857392', scale='stage', default_channel=1)],
     "H2":[Thorlabs.KinesisMotor(conn='83836223', scale='stage', default_channel=1)],
-    "V2":[Thorlabs.KinesisMotor(conn='83836935', scale='stage', default_channel=1)]
+    "Q2":[Thorlabs.KinesisMotor(conn='83836935', scale='stage', default_channel=1)]
 })
 
 tagger = createTimeTagger(resolution=Resolution_Standard)
