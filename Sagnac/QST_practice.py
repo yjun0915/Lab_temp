@@ -109,13 +109,16 @@ target = np.array([
 ])
 
 fidelity = np.trace(sqrtm(sqrtm(output).dot(target.dot(sqrtm(output)))))**2
-print("Fidelity: %f"%np.real(fidelity))
+purity = np.trace(output*output)
+r, v = np.linalg.eig(output)
+r = sorted(r, reverse=True)
+concurrence = max(0, r[0] - r[1] - r[2] - r[3])
 
 result_real = np.real(output).ravel()
 result_imag = np.imag(output).ravel()
 # print(result_real)
 
-fig = plt.figure()
+fig = plt.figure(figsize=(16, 6), dpi=100)
 
 _x = np.arange(4)
 _y = np.arange(4)
@@ -130,7 +133,7 @@ dx = dy = 0.6
 norm = Normalize(vmin=np.min([result_real, result_imag]), vmax=np.max([result_real, result_imag]))
 cmap = cm.viridis
 
-ax = fig.add_subplot(121, projection='3d')
+ax = fig.add_subplot(1, 5, (1, 2), projection='3d')
 colors = cmap(norm(result_real))
 
 ax.bar3d(x, y, z, dx, dy, result_real, color=colors, shade=True)
@@ -138,12 +141,19 @@ ax.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag
 ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 
-ax2 = fig.add_subplot(122, projection='3d')
+ax2 = fig.add_subplot(1, 5, (3, 4), projection='3d')
 colors = cmap(norm(result_imag))
 
 ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
 ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
 ax2.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 ax2.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+
+info = fig.add_subplot(155)
+info.text(y=1, x=0.2, s="Fidelity is %.4f"%fidelity)
+info.text(y=0.9, x=0.2, s="Concurrence is %.4f"%concurrence)
+info.text(y=0.8, x=0.2, s="Purity is %.4f"%purity)
+info.set_ylim([-0.5, 1.5])
+plt.axis('off')
 
 plt.show()
