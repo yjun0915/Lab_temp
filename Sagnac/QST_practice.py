@@ -11,6 +11,10 @@ from itertools import product
 
 from sympy.physics.quantum.density import fidelity
 
+imfo = {
+    "normalization":0
+}
+
 operator = {
     'H': np.array([[1, 0], [0, 0]]),
     'V': np.array([[0, 0], [0, 1]]),
@@ -69,7 +73,7 @@ def obj_function(x, P):
     return np.real(output)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_mockdata.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
 info = P.describe()
 
 if P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'] == 0:
@@ -94,7 +98,7 @@ MLE_Model = minimize(
 print(MLE_Model)
 
 t_mat = (density_matrix(MLE_Model.x))
-
+print(np.shape(t_mat))
 output = np.zeros(shape=[4, 4], dtype = 'complex')
 
 for i in range(4):
@@ -102,24 +106,43 @@ for i in range(4):
         output += 0.25*T[i][j]*tm(operator[stocks_index[i][0]] + (stocks_index[i][3]*operator[stocks_index[i][1]]),
                                  operator[stocks_index[j][0]] + (stocks_index[j][3]*operator[stocks_index[j][1]]))
 
-target = np.array([
+target_psi_p = np.array([
     [0, 0, 0, 0],
     [0, 0.5, 0.5, 0],
     [0, 0.5, 0.5, 0],
     [0, 0, 0, 0]
 ])
+target_psi_m = np.array([
+    [0, 0, 0, 0],
+    [0, 0.5, -0.5, 0],
+    [0, -0.5, 0.5, 0],
+    [0, 0, 0, 0]
+])
+target_phi_p = np.array([
+    [0.5, 0, 0, 0.5],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0.5, 0, 0, 0.5]
+])
+target_phi_m = np.array([
+    [0.5, 0, 0, -0.5],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [-0.5, 0, 0, 0.5]
+])
 print(t_mat)
 output = t_mat
 
-fidelity = np.trace(sqrtm(sqrtm(output).dot(target.dot(sqrtm(output)))))**2
+fidelity = np.trace(sqrtm(sqrtm(output).dot(target_psi_p.dot(sqrtm(output)))))**2
 purity = np.trace(output.dot(output))
 r, v = np.linalg.eig(output)
 r = sorted(r, reverse=True)
 concurrence = max(0, r[0] - r[1] - r[2] - r[3])
+print(fidelity, concurrence, purity)
 
-result_real = np.real(output).ravel()
-result_imag = np.imag(output).ravel()
-# print(result_real)
+result_real = np.squeeze(np.asarray(np.real(output).ravel()))
+result_imag = np.squeeze(np.asarray(np.imag(output).ravel()))
+print(np.shape(result_real))
 
 fig = plt.figure(figsize=(16, 6), dpi=100)
 
@@ -137,23 +160,20 @@ norm = Normalize(vmin=np.min([result_real, result_imag]), vmax=np.max([result_re
 cmap = cm.viridis
 
 ax = fig.add_subplot(1, 5, (1, 2), projection='3d')
-colors = cmap(norm(result_real.ravel()))
-colors = np.array(colors)[0]
+colors = cmap(norm(result_real))
 
-
-ax.bar3d(x, y, z, dx, dy, result_real, color=colors, shade=True)
+ax.bar3d(x, y, z, dx, dy, result_real.ravel(), color=colors, shade=True)
 ax.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
 ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 
-# ax2 = fig.add_subplot(1, 5, (3, 4), projection='3d')
-# colors = cmap(norm(result_imag.ravel()))
-# colors = np.array(colors)[0]
-#
-# ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
-# ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
-# ax2.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
-# ax2.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+ax2 = fig.add_subplot(1, 5, (3, 4), projection='3d')
+colors = cmap(norm(result_imag))
+
+ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
+ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
+ax2.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+ax2.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
 
 info = fig.add_subplot(155)
 info.text(y=1, x=0.2, s="Fidelity is %.4f"%fidelity)
@@ -163,13 +183,3 @@ info.set_ylim([-0.5, 1.5])
 plt.axis('off')
 
 plt.show()
-
-
-
-
-
-'''
-Try idle
-'''
-
-
