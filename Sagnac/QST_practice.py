@@ -95,10 +95,22 @@ def obj_function(obj_x, obj_p):
 
 
 P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
-info = P.describe()
 
-if P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'] != 0:
-    P = P/(P['H']['H']+P['H']['V']+P['V']['H']+P['V']['V'])
+indices = [1 for _ in range(len(basis))]
+
+for idx, item in enumerate(basis):
+    for base in item:
+        if base != "H" and base != "V":
+            indices[idx] = 0
+norm_basis_group = []
+for idx, var in enumerate(indices):
+    if var:
+        norm_basis_group.append([basis[idx][0], basis[idx][1]])
+
+norm = 0
+for base in norm_basis_group:
+    norm += P[base[0]][base[1]]
+P = P/norm
 
 output_stocks = np.zeros(shape=[4, 4], dtype = 'complex')
 T = np.zeros(shape=(4, 4))
@@ -134,11 +146,11 @@ for idx in range(2):
     output = output_MLE
     if idx == 1:
         output = output_stocks
-    fidelity = np.trace(sqrtm(sqrtm(output).dot(target['psi+'].dot(sqrtm(output)))))**2
-    purity = np.trace(output.dot(output))
+    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['psi+'].dot(sqrtm(output)))))**2)
+    purity = np.real(np.trace(output.dot(output)))
     r, v = np.linalg.eig(output)
     r = sorted(r, reverse=True)
-    concurrence = max(0, r[0] - r[1] - r[2] - r[3])
+    concurrence = np.real(max(0, r[0] - r[1] - r[2] - r[3]))
 
     result_real = np.squeeze(np.asarray(np.real(output).ravel()))
     result_imag = np.squeeze(np.asarray(np.imag(output).ravel()))
