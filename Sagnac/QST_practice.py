@@ -97,7 +97,6 @@ def obj_function(obj_x, obj_p):
 P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
 
 indices = [1 for _ in range(len(basis))]
-
 for idx, item in enumerate(basis):
     for base in item:
         if base != "H" and base != "V":
@@ -106,7 +105,6 @@ norm_basis_group = []
 for idx, var in enumerate(indices):
     if var:
         norm_basis_group.append([basis[idx][0], basis[idx][1]])
-
 norm = 0
 for base in norm_basis_group:
     norm += P[base[0]][base[1]]
