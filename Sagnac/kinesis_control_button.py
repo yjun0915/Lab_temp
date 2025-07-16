@@ -8,8 +8,8 @@ H2 = Thorlabs.KinesisMotor(conn='83836223', scale='stage', default_channel=1)
 Q1 = Thorlabs.KinesisMotor(conn='83857392', scale='stage', default_channel=1)
 Q2 = Thorlabs.KinesisMotor(conn='83836935', scale='stage', default_channel=1)
 
-# Q1.move_to(218.0520)
-# Q2.move_to(208.9197)
+Q1.move_to(35)
+Q2.move_to(24.6)
 
 def move_H1_H2(pos1, pos2):
     H1.move_to(pos1)

@@ -1,10 +1,12 @@
+import sys, os, time
+
 import numpy as np
 import pandas as pd
 
 from itertools import product
 from actions import Function
-
-import time
+from rich.console import Console
+from rich.table import Table
 
 
 class QST:
@@ -32,6 +34,9 @@ class QST:
         }
         self.P = pd.DataFrame(columns=['H', 'V', 'D', 'A', 'R', 'L'], index=['H', 'V', 'D', 'A', 'R', 'L'])
         self.func = Function(stages)
+        self.console = Console()
+        self.table = Table(show_lines=True)
+        self.table.add_column("", justify="center", style="cyan")
 
     def measure(self):
         for base in self.basis:
@@ -49,6 +54,21 @@ class QST:
             A_channel_counts = np.sum(a=count_data, axis=1)[0]
             B_channel_counts = np.sum(a=count_data, axis=1)[1]
             coincidence_data = np.sum(a=count_data, axis=1)[2]
-            print('Coincidence counts for', "|"+base[0]+base[1]+">", ':', coincidence_data)
             self.P.loc[base[0], base[1]] = coincidence_data
+            sys.stdout.write('\x1b[1A\x1b[2K'*7)
+            self.console.clear()
+            self.console.rule(f'[bold yellow]Coincidence counts for|{base[0]}{base[1]}>: {coincidence_data}')
+            self.table = Table(show_lines=True)
+            self.table.add_column("", justify="center", style="cyan")
+            for c in self.P.columns:
+                self.table.add_column(c, justify="center")
+
+            for idx in self.P.index:
+                row = [idx] + [
+                    str(int(self.P.loc[idx, col])) if not pd.isna(self.P.loc[idx, col]) else "    "
+                    for col in self.P.columns
+                ]
+                self.table.add_row(*row)
+
+            self.console.print(self.table)
         return self.P
