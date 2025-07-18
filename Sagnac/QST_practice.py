@@ -67,7 +67,7 @@ target = {
 }
 
 parameters = ['H', 'V', 'D', 'A', 'R', 'L']
-basis = np.array(list(product(parameters, repeat=__DIMENSION__)))
+basis = [''.join(p) for p in product(parameters, repeat=__DIMENSION__)]
 
 
 def tensor_multiplication(tensor1, tensor2):
@@ -100,7 +100,7 @@ def obj_function(obj_x, obj_p):
     obj_output = 1
     for base in basis:
         _n = tensor_multiplication(states[base[0]], states[base[1]]).dot(obj_r.dot(tensor_multiplication(states[base[0]], states[base[1]]).H))
-        obj_output += ((_n - obj_p[base[0]][base[1]])**2)/(2*_n)
+        obj_output += ((_n - obj_p["Coincidence counts"][base])**2)/(2*_n)
     return np.real(obj_output)
 
 
@@ -139,10 +139,10 @@ for idx, item in enumerate(basis):
 norm_basis_group = []
 for idx, var in enumerate(indices):
     if var:
-        norm_basis_group.append([basis[idx][0], basis[idx][1]])
+        norm_basis_group.append(basis[idx])
 norm = 0
 for base in norm_basis_group:
-    norm += P[base[0]][base[1]]
+    norm += P["Coincidence counts"][base]
 P = P/norm
 # </editor-fold>
 
@@ -156,7 +156,7 @@ for i in range(4):
         for m in range(2):
             for n in range(2):
                 parity = stocks_index[i][m+2] * stocks_index[j][n+2]
-                T[i][j] += parity * P[stocks_index[i][m]][stocks_index[j][n]]   # eq. 39
+                T[i][j] += parity * P["Coincidence counts"][''.join([stocks_index[i][m], stocks_index[j][n]])]   # eq. 39
 
 for i in range(4):
     for j in range(4):

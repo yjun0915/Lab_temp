@@ -27,10 +27,14 @@ try:
     while True:
         if ser.in_waiting > 0:
             command = ser.readline().decode().strip()
-            if command == "SET1":
+            if command == "H":
                 move_H1_H2(34.8000, 52.9000)
-            elif command == "SET2":
+            elif command == "V":
                 move_H1_H2(79.8000, 7.9000)
+            elif command == "D":
+                move_H1_H2(57.3000, 30.4000)
+            elif command == "A":
+                move_H1_H2(12.3000, -14.6000)
             else:
                 print(f"[Unknown Command]: {command}")
         time.sleep(0.1)

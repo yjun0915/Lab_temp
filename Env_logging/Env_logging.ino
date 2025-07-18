@@ -14,12 +14,22 @@ void loop() {
   bool current2 = digitalRead(button2);
 
   if (current1 == LOW && lastButton1State == HIGH) {
-    Serial.println("SET1");
+    Serial.println("H");
     delay(200); // 디바운스
   }
 
   if (current1 == HIGH && lastButton1State == LOW) {
-    Serial.println("SET2");
+    Serial.println("V");
+    delay(200); // 디바운스
+  }
+  
+  if (current2 == LOW && lastButton2State == HIGH) {
+    Serial.println("D");
+    delay(200); // 디바운스
+  }
+
+  if (current2 == HIGH && lastButton2State == LOW) {
+    Serial.println("A");
     delay(200); // 디바운스
   }
 
