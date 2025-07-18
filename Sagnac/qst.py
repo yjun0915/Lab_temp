@@ -10,12 +10,13 @@ from rich.table import Table
 
 
 class QST:
-    def __init__(self, stages, detector, offset):
+    def __init__(self, stages, detector, offset, dimension):
         self.stages = stages
         self.detector = detector
         self.order = ['H1', 'Q1', 'H2', 'Q2']
         parameters = ['H', 'V', 'D', 'A', 'R', 'L']
-        self.basis = np.array(list(product(parameters, parameters)))
+        self.basis = [''.join(p) for p in product(parameters, repeat=dimension)]
+        print(self.basis)
         self.a_angle = {
             'H': [offset[0], offset[1]],
             'V': [offset[0]+45, offset[1]],
@@ -32,7 +33,7 @@ class QST:
             'R': [offset[2], offset[3]+45],
             'L': [offset[2], offset[3]-45]
         }
-        self.P = pd.DataFrame(columns=['H', 'V', 'D', 'A', 'R', 'L'], index=['H', 'V', 'D', 'A', 'R', 'L'])
+        self.P = pd.DataFrame(columns=["A counts", "B counts", "Coincidence counts"], index=self.basis)
         self.func = Function(stages)
         self.console = Console()
         self.table = Table(show_lines=True)
@@ -54,21 +55,6 @@ class QST:
             A_channel_counts = np.sum(a=count_data, axis=1)[0]
             B_channel_counts = np.sum(a=count_data, axis=1)[1]
             coincidence_data = np.sum(a=count_data, axis=1)[2]
-            self.P.loc[base[0], base[1]] = coincidence_data
-            sys.stdout.write('\x1b[1A\x1b[2K'*7)
-            self.console.clear()
-            self.console.rule(f'[bold yellow]Coincidence counts for|{base[0]}{base[1]}>: {coincidence_data}')
-            self.table = Table(show_lines=True)
-            self.table.add_column("", justify="center", style="cyan")
-            for c in self.P.columns:
-                self.table.add_column(c, justify="center")
-
-            for idx in self.P.index:
-                row = [idx] + [
-                    str(int(self.P.loc[idx, col])) if not pd.isna(self.P.loc[idx, col]) else "    "
-                    for col in self.P.columns
-                ]
-                self.table.add_row(*row)
-
-            self.console.print(self.table)
+            self.P.loc[base] = [A_channel_counts, B_channel_counts, coincidence_data]
+            print(self.P)
         return self.P
