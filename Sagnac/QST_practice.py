@@ -53,6 +53,12 @@ target = {
         [0, 0, 0, 0],
         [0, 0, 0, 0],
         [-0.5, 0, 0, 0.5],
+    ]),
+    'other': np.array([
+        [0, 0, 0, 0],
+        [0, 0.5, 1j/2, 0],
+        [0, -1j/2, 0.5, 0],
+        [0, 0, 0, 0]
     ])
 }
 
@@ -94,8 +100,18 @@ def obj_function(obj_x, obj_p):
     return np.real(obj_output)
 
 
-P = pd.read_csv(filepath_or_buffer='../QST_example_2qubit.csv', sep=',', index_col=0)
+def ax_format(_ax):
+    _ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+    _ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+    _ax.set_zticks([])
+    _ax.view_init(34, 24)
+    _ax.set_proj_type('persp', focal_length=0.2)
+    _ax.grid(False)
 
+
+P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
+
+# <editor-fold desc="auto normalization">
 indices = [1 for _ in range(len(basis))]
 for idx, item in enumerate(basis):
     for base in item:
@@ -109,6 +125,7 @@ norm = 0
 for base in norm_basis_group:
     norm += P[base[0]][base[1]]
 P = P/norm
+# </editor-fold>
 
 output_stocks = np.zeros(shape=[4, 4], dtype = 'complex')
 T = np.zeros(shape=(4, 4))
@@ -132,7 +149,7 @@ MLE_Model = minimize(
     obj_function,
     x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.125,
     args=P,
-    method='COBYLA'
+    method="COBYLA"
 )
 print(MLE_Model)
 
@@ -173,20 +190,14 @@ for idx in range(2):
 
     ax.bar3d(x, y, z, dx, dy, result_real.ravel(), color=colors, shade=True)
     ax.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
-    ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
-    ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['<HH|', '<HV|', '<VH|', '<VV|'])
-    ax.set_zticks([])
-    ax.view_init(34, 24)
-    ax.set_proj_type('persp', focal_length=0.3)
-    ax.grid(False)
+    ax_format(_ax=ax)
 
     ax2 = fig.add_subplot(2, 5, (3+row, 4+row), projection='3d')
     colors = cmap(norm(result_imag))
 
     ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
     ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
-    ax2.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
-    ax2.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
+    ax_format(_ax=ax2)
 
     info = fig.add_subplot(2, 5, 5+row)
     info.text(y=1, x=0.2, s="Fidelity is %.4f"%fidelity)

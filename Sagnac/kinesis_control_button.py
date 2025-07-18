@@ -28,9 +28,9 @@ try:
         if ser.in_waiting > 0:
             command = ser.readline().decode().strip()
             if command == "SET1":
-                move_H1_H2(35.5000, 52.9000)
+                move_H1_H2(34.8000, 52.9000)
             elif command == "SET2":
-                move_H1_H2(80.5000, 7.9000)
+                move_H1_H2(79.8000, 7.9000)
             else:
                 print(f"[Unknown Command]: {command}")
         time.sleep(0.1)

@@ -8,7 +8,7 @@ from TimeTagger import Coincidences, Counter, Resolution_Standard, createTimeTag
 import pandas as pd
 
 
-binwidth, n_value, cw = 300.0, 1, 1000
+binwidth, n_value, cw = 1000.0, 1, 1000
 delay = [0, 132]
 
 devices = Thorlabs.list_kinesis_devices()
@@ -45,6 +45,6 @@ if __name__ == "__main__":
     # data = go_fast_axis.excute([217.2535, 218.0520, 143.0710, 208.9197])
     # print(data)
     # offset = data.x - [0, 0, 45, 0]
-    qst = QST(stages, counter, [35.5, 35, 7.9, 24.6])
+    qst = QST(stages, counter, [34.8, 35, 7.9, 24.6])
     P = qst.measure()
-    P.to_csv(path_or_buf="QST_data.csv", sep = ',')
+    P.to_csv(path_or_buf="./QST_data.csv", sep = ',')
