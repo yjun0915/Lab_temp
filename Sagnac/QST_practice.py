@@ -59,10 +59,10 @@ target = {
         [-0.5, 0, 0, 0.5],
     ]),
     'other': np.array([
-        [0, 0, 0, 0],
-        [0, 0.5, 1j/2, 0],
-        [0, -1j/2, 0.5, 0],
-        [0, 0, 0, 0]
+        [1/6, 0, 0, -1j/6],
+        [0, 1/3, 1/3, 0],
+        [0, 1/3, 1/3, 0],
+        [1j/6, 0, 0, 1/6]
     ])
 }
 
@@ -107,7 +107,7 @@ def obj_function(obj_x, obj_p):
 def ax_format(_ax):
     _ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
     _ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
-    _ax.set_zticks([])
+    # _ax.set_zticks([])
     _ax.view_init(34, 20)
     _ax.set_proj_type('persp', focal_length=0.2)
     _ax.grid(False)
@@ -168,7 +168,7 @@ for i in range(4):
 output_MLE = np.zeros(shape=[4, 4], dtype = 'complex')
 MLE_Model = minimize(
     obj_function,
-    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.125,
+    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*25,
     args=P,
     method="COBYLA"
 )
@@ -181,8 +181,8 @@ fig = plt.figure(figsize=(16, 10), dpi=100)
 for idx in range(2):
     output = output_MLE
     if idx == 1:
-        output = output_stocks
-    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['psi+'].dot(sqrtm(output)))))**2)
+        output = target['other']
+    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['other'].dot(sqrtm(output)))))**2)
     purity = np.real(np.trace(output.dot(output)))
     r, v = np.linalg.eig(output)
     r = sorted(r, reverse=True)
