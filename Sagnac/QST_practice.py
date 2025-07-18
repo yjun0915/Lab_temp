@@ -184,7 +184,9 @@ for idx in range(2):
         output = target['other']
     fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['other'].dot(sqrtm(output)))))**2)
     purity = np.real(np.trace(output.dot(output)))
-    r, v = np.linalg.eig(output)
+    spin_flip = tensor_multiplication(operator['R']-operator['L'], operator['R']-operator['L'])
+    row = spin_flip*(np.asmatrix(output).H)*spin_flip
+    r, v = np.linalg.eig(sqrtm(sqrtm(output).dot(row.dot(sqrtm(output)))))
     r = sorted(r, reverse=True)
     concurrence = np.real(max(0, r[0] - r[1] - r[2] - r[3]))
 
