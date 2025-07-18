@@ -1,11 +1,15 @@
+import math
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
 from matplotlib import cm
 from matplotlib.colors import Normalize
+from matplotlib.colors import LightSource
 from scipy.linalg import sqrtm
+from scipy.special import erf
 from scipy.optimize import minimize
-
 from itertools import product
 
 
@@ -104,9 +108,24 @@ def ax_format(_ax):
     _ax.set_xticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
     _ax.set_yticks([0.5, 1.5, 2.5, 3.5], ['|HH>', '|HV>', '|VH>', '|VV>'])
     _ax.set_zticks([])
-    _ax.view_init(34, 24)
+    _ax.view_init(34, 20)
     _ax.set_proj_type('persp', focal_length=0.2)
     _ax.grid(False)
+
+
+def rounded_box(_ax, _x, _y, _z, r, p, c):
+    k = p
+    theta = np.linspace(start=0, stop=2 * np.pi, num=50)
+    x1 = (((erf(theta - np.pi) ** k - 0.5) * 2) * r) + _x
+    y1 = (-np.sin(theta) * r) + _y
+    z1 = 0
+
+    x2 = x1
+    y2 = y1
+    z2 = _z
+
+    _ax.fill_between(x1, y1, z1, x2, y2, z2, color=c, edgecolor=c, shade=True)
+    _ax.fill_between(x1, y1, z1, x2, y2, z1, color=c, edgecolor=c, shade=True)
 
 
 P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
@@ -127,6 +146,7 @@ for base in norm_basis_group:
 P = P/norm
 # </editor-fold>
 
+# <editor-fold desc="Stocks method">
 output_stocks = np.zeros(shape=[4, 4], dtype = 'complex')
 T = np.zeros(shape=(4, 4))
 stocks_index = [['H', 'V', 1, 1], ['D', 'A', 1, -1], ['R', 'L', 1, -1], ['H', 'V', 1, -1]]
@@ -142,8 +162,9 @@ for i in range(4):
     for j in range(4):
         output_stocks += 0.25 * T[i][j] * tensor_multiplication(operator[stocks_index[i][0]] + (stocks_index[i][3] * operator[stocks_index[i][1]]),
                                                          operator[stocks_index[j][0]] + (stocks_index[j][3]*operator[stocks_index[j][1]]))
+#</editor-fold>
 
-
+# <editor-fold desc="MLE method">
 output_MLE = np.zeros(shape=[4, 4], dtype = 'complex')
 MLE_Model = minimize(
     obj_function,
@@ -154,7 +175,7 @@ MLE_Model = minimize(
 print(MLE_Model)
 
 output_MLE = density_matrix(MLE_Model.x)
-
+# </editor-fold>
 
 fig = plt.figure(figsize=(16, 10), dpi=100)
 for idx in range(2):
@@ -170,7 +191,6 @@ for idx in range(2):
     result_real = np.squeeze(np.asarray(np.real(output).ravel()))
     result_imag = np.squeeze(np.asarray(np.imag(output).ravel()))
 
-
     _x = np.arange(4)
     _y = np.arange(4)
     _xx, _yy = np.meshgrid(_x, _y)
@@ -185,19 +205,25 @@ for idx in range(2):
     cmap = cm.viridis
 
     row = idx*5
+    ls = LightSource(azdeg=135, altdeg=45)
     ax = fig.add_subplot(2, 5, (1+row, 2+row), projection='3d')
     colors = cmap(norm(result_real))*0.8 + 0.2
 
-    ax.bar3d(x, y, z, dx, dy, result_real.ravel(), color=colors, shade=True)
+    ax.bar3d(x, y, z, dx, dy, result_real.ravel(), color=colors, shade=True, lightsource=ls)
+    # for i in range(4):
+    #     for j in range(4):
+    #         rounded_box(ax, i, j, result_real[i+4*j], 0.3, 20, colors[i+4*j])
     ax.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
     ax_format(_ax=ax)
+    ax.set_title("Real")
 
     ax2 = fig.add_subplot(2, 5, (3+row, 4+row), projection='3d')
-    colors = cmap(norm(result_imag))
+    colors = cmap(norm(result_imag))*0.8 + 0.2
 
-    ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True)
+    ax2.bar3d(x, y, z, dx, dy, result_imag, color=colors, shade=True, lightsource=ls)
     ax2.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
     ax_format(_ax=ax2)
+    ax2.set_title("Imaginary")
 
     info = fig.add_subplot(2, 5, 5+row)
     info.text(y=1, x=0.2, s="Fidelity is %.4f"%fidelity)
