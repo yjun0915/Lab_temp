@@ -1,4 +1,4 @@
-import math
+import time
 
 import pandas as pd
 import numpy as np
@@ -98,9 +98,13 @@ def density_matrix(dm_x):
 def obj_function(obj_x, obj_p):
     obj_r = density_matrix(obj_x)
     obj_output = 1
+    print(obj_x)
     for base in basis:
         _n = tensor_multiplication(states[base[0]], states[base[1]]).dot(obj_r.dot(tensor_multiplication(states[base[0]], states[base[1]]).H))
         obj_output += ((_n - obj_p["Coincidence counts"][base])**2)/(2*_n)
+    time.sleep(0.01)
+    print(np.real(obj_output))
+    time.sleep(0.0036)
     return np.real(obj_output)
 
 
@@ -128,7 +132,7 @@ def rounded_box(_ax, _x, _y, _z, r, p, c):
     _ax.fill_between(x1, y1, z1, x2, y2, z1, color=c, edgecolor=c, shade=True)
 
 
-P = pd.read_csv(filepath_or_buffer='./Sagnac/QST_data_97.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_data_97.csv', sep=',', index_col=0)
 
 # <editor-fold desc="auto normalization">
 indices = [1 for _ in range(len(basis))]
@@ -168,7 +172,7 @@ for i in range(4):
 output_MLE = np.zeros(shape=[4, 4], dtype = 'complex')
 MLE_Model = minimize(
     obj_function,
-    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*25,
+    x0=np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])*0.25,
     args=P,
     method="COBYLA"
 )
@@ -214,7 +218,7 @@ for idx in range(2):
     ax.bar3d(x, y, z, dx, dy, result_real.ravel(), color=colors, shade=True, lightsource=ls)
     # for i in range(4):
     #     for j in range(4):
-    #         rounded_box(ax, i, j, result_real[i+4*j], 0.3, 20, colors[i+4*j])
+    #         rounded_box(ax, i+0.5, j+0.5, result_real[i+4*j], 0.3, 20, colors[i+4*j])
     ax.set_zlim(np.min([result_real, result_imag]), np.max([result_real, result_imag]))
     ax_format(_ax=ax)
     ax.set_title("Real")
