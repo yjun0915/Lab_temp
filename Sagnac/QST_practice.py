@@ -128,7 +128,7 @@ def rounded_box(_ax, _x, _y, _z, r, p, c):
     _ax.fill_between(x1, y1, z1, x2, y2, z1, color=c, edgecolor=c, shade=True)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_data_97.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./Sagnac/QST_data_97.csv', sep=',', index_col=0)
 
 # <editor-fold desc="auto normalization">
 indices = [1 for _ in range(len(basis))]
@@ -177,7 +177,7 @@ print(MLE_Model)
 output_MLE = density_matrix(MLE_Model.x)
 # </editor-fold>
 
-fig = plt.figure(figsize=(16, 10), dpi=100)
+fig = plt.figure(figsize=(14, 10), dpi=80)
 for idx in range(2):
     output = output_MLE
     if idx == 1:
