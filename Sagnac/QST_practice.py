@@ -128,7 +128,7 @@ def rounded_box(_ax, _x, _y, _z, r, p, c):
     _ax.fill_between(x1, y1, z1, x2, y2, z1, color=c, edgecolor=c, shade=True)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_data_997.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_data_97.csv', sep=',', index_col=0)
 
 # <editor-fold desc="auto normalization">
 indices = [1 for _ in range(len(basis))]
@@ -181,7 +181,7 @@ fig = plt.figure(figsize=(16, 10), dpi=100)
 for idx in range(2):
     output = output_MLE
     if idx == 1:
-        output = target['other']
+        output = output_stocks
     fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['psi+'].dot(sqrtm(output)))))**2)
     purity = np.real(np.trace(output.dot(output)))
     spin_flip = tensor_multiplication(operator['R']-operator['L'], operator['R']-operator['L'])
