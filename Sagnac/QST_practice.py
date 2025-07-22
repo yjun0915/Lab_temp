@@ -102,9 +102,9 @@ def obj_function(obj_x, obj_p):
     for base in basis:
         _n = tensor_multiplication(states[base[0]], states[base[1]]).dot(obj_r.dot(tensor_multiplication(states[base[0]], states[base[1]]).H))
         obj_output += ((_n - obj_p["Coincidence counts"][base])**2)/(2*_n)
-    time.sleep(0.01)
+    # time.sleep(0.01)
     print(np.real(obj_output))
-    time.sleep(0.0036)
+    # time.sleep(0.0036)
     return np.real(obj_output)
 
 
