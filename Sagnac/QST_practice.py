@@ -185,7 +185,7 @@ fig = plt.figure(figsize=(14, 10), dpi=80)
 for idx in range(2):
     output = output_MLE
     if idx == 1:
-        output = target['other']
+        output = output_stocks
     fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['other'].dot(sqrtm(output)))))**2)
     purity = np.real(np.trace(output.dot(output)))
     spin_flip = tensor_multiplication(operator['R']-operator['L'], operator['R']-operator['L'])

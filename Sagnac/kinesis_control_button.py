@@ -13,8 +13,10 @@ H2.home()
 Q1.home()
 Q2.home()
 
-Q1.move_to(39.51)
-Q2.move_to(276.61)
+Q1.move_to(128.885)
+Q2.move_to(204.6)
+# Q1.move_to(39.51)
+# Q2.move_to(276.61)
 
 def move_H1_H2(pos1, pos2):
     H1.move_to(pos1)

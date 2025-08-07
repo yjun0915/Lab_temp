@@ -45,6 +45,6 @@ if __name__ == "__main__":
     # data = go_fast_axis.excute([43, 16.8, 7.9, 26.8])
     # print(data)
     # offset = data.x - [0, 0, 45, 0]
-    qst = QST(stages, counter, [35.5, 39.51, 7.9, 276.61], 2)
+    qst = QST(stages, counter, [35.5000, 128.8850, 7.9000, 204.6000], 2)
     P = qst.measure()
     P.to_csv(path_or_buf="./QST_data.csv", sep = ',')
