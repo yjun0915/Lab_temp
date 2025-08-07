@@ -8,8 +8,13 @@ H2 = Thorlabs.KinesisMotor(conn='83836223', scale='stage', default_channel=1)
 Q1 = Thorlabs.KinesisMotor(conn='83857392', scale='stage', default_channel=1)
 Q2 = Thorlabs.KinesisMotor(conn='83836935', scale='stage', default_channel=1)
 
-Q1.move_to(35)
-Q2.move_to(24.6)
+H1.home()
+H2.home()
+Q1.home()
+Q2.home()
+
+Q1.move_to(39.51)
+Q2.move_to(276.61)
 
 def move_H1_H2(pos1, pos2):
     H1.move_to(pos1)
@@ -28,13 +33,13 @@ try:
         if ser.in_waiting > 0:
             command = ser.readline().decode().strip()
             if command == "H":
-                move_H1_H2(34.8000, 52.9000)
+                move_H1_H2(35.5000, 52.9000)
             elif command == "V":
-                move_H1_H2(79.8000, 7.9000)
+                move_H1_H2(80.5000, 7.9000)
             elif command == "D":
-                move_H1_H2(57.3000, 30.4000)
+                move_H1_H2(58.0000, 30.4000)
             elif command == "A":
-                move_H1_H2(12.3000, -14.6000)
+                move_H1_H2(13.0000, -14.6000)
             else:
                 print(f"[Unknown Command]: {command}")
         time.sleep(0.1)

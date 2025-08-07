@@ -59,10 +59,10 @@ target = {
         [-0.5, 0, 0, 0.5],
     ]),
     'other': np.array([
-        [1/6, 0, 0, -1j/6],
-        [0, 1/3, 1/3, 0],
-        [0, 1/3, 1/3, 0],
-        [1j/6, 0, 0, 1/6]
+        [1/6, 0, 0, 1j/6],
+        [0, 1/3, -1/3, 0],
+        [0, -1/3, 1/3, 0],
+        [-1j/6, 0, 0, 1/6]
     ])
 }
 
@@ -132,7 +132,7 @@ def rounded_box(_ax, _x, _y, _z, r, p, c):
     _ax.fill_between(x1, y1, z1, x2, y2, z1, color=c, edgecolor=c, shade=True)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_data_97.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
 
 # <editor-fold desc="auto normalization">
 indices = [1 for _ in range(len(basis))]
@@ -185,8 +185,8 @@ fig = plt.figure(figsize=(14, 10), dpi=80)
 for idx in range(2):
     output = output_MLE
     if idx == 1:
-        output = output_stocks
-    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['psi+'].dot(sqrtm(output)))))**2)
+        output = target['other']
+    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['other'].dot(sqrtm(output)))))**2)
     purity = np.real(np.trace(output.dot(output)))
     spin_flip = tensor_multiplication(operator['R']-operator['L'], operator['R']-operator['L'])
     row = spin_flip*(np.asmatrix(output).H)*spin_flip

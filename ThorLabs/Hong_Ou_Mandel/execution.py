@@ -39,10 +39,10 @@ class Experiment:
         if select:
             selection = device_list[int(input(device_list) or 0)][0]
         else:
-            selection = '27266188'
+            selection = '27007111'
 
         self.stage = Thorlabs.KinesisMotor(conn=selection, scale="stage", default_channel=1)
-
+        self.stage.setup_velocity(max_velocity=0.001, acceleration=0.002)
         # device initializing
         self.counter.start()
         self.move_kinesis(sub_stage=self.stage, pos = self.start_point)
