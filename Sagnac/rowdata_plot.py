@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-data = pd.read_csv(filepath_or_buffer="./QST_data_97.csv", index_col=0)
+data = pd.read_csv(filepath_or_buffer="./lastqet.csv", index_col=0)
 
 basis = ["HH", "HV", "VV", "VH", "DD", "DA", "AA", "AD"]
 

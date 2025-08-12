@@ -20,18 +20,18 @@ class QST:
         self.a_angle = {
             'H': [offset[0], offset[1]],
             'V': [offset[0]+45, offset[1]],
-            'D': [offset[0]+22.5, offset[1]],
-            'A': [offset[0]-22.5, offset[1]],
+            'D': [offset[0]+22.5, offset[1]+45],
+            'A': [offset[0]-22.5, offset[1]+45],
             'R': [offset[0], offset[1]+45],
-            'L': [offset[0], offset[1]-45]
+            'L': [offset[0]+45, offset[1]+45]
         }
         self.b_angle = {
             'H': [offset[2], offset[3]],
             'V': [offset[2]+45, offset[3]],
-            'D': [offset[2]+22.5, offset[3]],
-            'A': [offset[2]-22.5, offset[3]],
+            'D': [offset[2]+22.5, offset[3]+45],
+            'A': [offset[2]-22.5, offset[3]+45],
             'R': [offset[2], offset[3]+45],
-            'L': [offset[2], offset[3]-45]
+            'L': [offset[2]+45, offset[3]+45]
         }
         self.P = pd.DataFrame(columns=["A counts", "B counts", "Coincidence counts"], index=self.basis)
         self.func = Function(stages)

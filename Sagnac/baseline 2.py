@@ -6,7 +6,7 @@ from scipy.optimize import minimize
 
 
 motor_serials = ["83836223", "83836935", "83854766", "83857392"]
-measure_time = 0.5  # sec
+measure_time = 1  # sec
 
 basis_to_angles = {
     'H': (0, 0),
@@ -85,7 +85,7 @@ def cost_function(baseline_angles):
     return cost
 
 
-x0 = [7.9, 24.6, 35.5, 35]
+x0 = [7.9000, 204.6000, 35.5000, 218.8850]
 result = minimize(
     cost_function,
     x0,

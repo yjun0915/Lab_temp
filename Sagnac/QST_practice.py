@@ -132,7 +132,7 @@ def rounded_box(_ax, _x, _y, _z, r, p, c):
     _ax.fill_between(x1, y1, z1, x2, y2, z1, color=c, edgecolor=c, shade=True)
 
 
-P = pd.read_csv(filepath_or_buffer='./QST_data.csv', sep=',', index_col=0)
+P = pd.read_csv(filepath_or_buffer='./QST_data_250811_225.csv', sep=',', index_col=0)
 
 # <editor-fold desc="auto normalization">
 indices = [1 for _ in range(len(basis))]
@@ -166,6 +166,8 @@ for i in range(4):
     for j in range(4):
         output_stocks += 0.25 * T[i][j] * tensor_multiplication(operator[stocks_index[i][0]] + (stocks_index[i][3] * operator[stocks_index[i][1]]),
                                                          operator[stocks_index[j][0]] + (stocks_index[j][3]*operator[stocks_index[j][1]]))
+
+output_stocks = output_stocks/np.trace(output_stocks)
 #</editor-fold>
 
 # <editor-fold desc="MLE method">
@@ -186,7 +188,7 @@ for idx in range(2):
     output = output_MLE
     if idx == 1:
         output = output_stocks
-    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['other'].dot(sqrtm(output)))))**2)
+    fidelity = np.real(np.trace(sqrtm(sqrtm(output).dot(target['psi+'].dot(sqrtm(output)))))**2)
     purity = np.real(np.trace(output.dot(output)))
     spin_flip = tensor_multiplication(operator['R']-operator['L'], operator['R']-operator['L'])
     row = spin_flip*(np.asmatrix(output).H)*spin_flip
